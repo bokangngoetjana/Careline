@@ -1,0 +1,25 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+WORKDIR /src
+COPY ["src/CareLine.Web.Host/CareLine.Web.Host.csproj", "src/CareLine.Web.Host/"]
+COPY ["src/CareLine.Web.Core/CareLine.Web.Core.csproj", "src/CareLine.Web.Core/"]
+COPY ["src/CareLine.Application/CareLine.Application.csproj", "src/CareLine.Application/"]
+COPY ["src/CareLine.Core/CareLine.Core.csproj", "src/CareLine.Core/"]
+COPY ["src/CareLine.EntityFrameworkCore/CareLine.EntityFrameworkCore.csproj", "src/CareLine.EntityFrameworkCore/"]
+WORKDIR "/src/src/CareLine.Web.Host"
+RUN dotnet restore 
+
+WORKDIR /src
+COPY ["src/CareLine.Web.Host", "src/CareLine.Web.Host"]
+COPY ["src/CareLine.Web.Core", "src/CareLine.Web.Core"]
+COPY ["src/CareLine.Application", "src/CareLine.Application"]
+COPY ["src/CareLine.Core", "src/CareLine.Core"]
+COPY ["src/CareLine.EntityFrameworkCore", "src/CareLine.EntityFrameworkCore"]
+WORKDIR "/src/src/CareLine.Web.Host"
+RUN dotnet publish -c Release -o /publish --no-restore
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+EXPOSE 80
+WORKDIR /app
+COPY --from=build /publish .
+ENTRYPOINT ["dotnet", "CareLine.Web.Host.dll"]
