@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Important
 
 Issues of this repository are tracked on https://github.com/aspnetboilerplate/aspnetboilerplate. Please create your issues on https://github.com/aspnetboilerplate/aspnetboilerplate/issues.
@@ -35,3 +36,6 @@ Create & download your project from https://aspnetboilerplate.com/Templates
 # License
 
 [MIT](LICENSE).
+=======
+# Careline
+>>>>>>> 1178d4e41c8cf4fa3efe826441c989e236859c5e
