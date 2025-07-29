@@ -17,4 +17,3 @@ front-end/.next/
 **/docker-compose.override.yml
 **/docker-compose.*
 **/.dockerignore
-**/Dockerfile
