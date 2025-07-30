@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Abp.Domain.Entities.Auditing;
+using CareLine.Domain.Tickets;
 
 namespace CareLine.Domain.MedHistory
 {
@@ -13,6 +14,7 @@ namespace CareLine.Domain.MedHistory
         public string Notes { get; set; }
         public string MedicationPrescribed { get; set; }
         public string FollowUpInstructions { get; set; }
+        public Ticket Ticket { get; set; }
 
     }
 }
