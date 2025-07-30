@@ -1,4 +1,5 @@
-﻿using Abp.AspNetCore.Dependency;
+﻿using System;
+using Abp.AspNetCore.Dependency;
 using Abp.Dependency;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
@@ -16,7 +17,11 @@ namespace CareLine.Web.Host.Startup
             Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+                    webBuilder.UseUrls($"http://0.0.0.0:{port}");
                     webBuilder.UseStartup<Startup>();
+                    //var port = Environment.GetEnvironmentVariable("PORT") ?? "5000";
+                    //webBuilder.UseUrls($"http://localhost:{port}");
                 })
                 .UseCastleWindsor(IocManager.Instance.IocContainer);
     }
