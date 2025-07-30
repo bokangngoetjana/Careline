@@ -3,6 +3,7 @@ using Abp.Zero.EntityFrameworkCore;
 using CareLine.Authorization.Roles;
 using CareLine.Authorization.Users;
 using CareLine.MultiTenancy;
+using CareLine.Domain.ClinicStaff;
 using CareLine.Domain.Patients;
 
 namespace CareLine.EntityFrameworkCore
@@ -11,6 +12,7 @@ namespace CareLine.EntityFrameworkCore
     {
         /* Define a DbSet for each entity of the application */
         public DbSet<Patient> Patients { get; set; }
+        public DbSet<Staff> Staff { get; set; }
         public CareLineDbContext(DbContextOptions<CareLineDbContext> options)
             : base(options)
         {
