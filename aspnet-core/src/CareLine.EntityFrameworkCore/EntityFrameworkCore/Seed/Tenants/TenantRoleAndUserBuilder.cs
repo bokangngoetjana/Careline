@@ -39,6 +39,18 @@ namespace CareLine.EntityFrameworkCore.Seed.Tenants
                 _context.SaveChanges();
             }
 
+            //Patient role seeding
+            var patientRole = _context.Roles.IgnoreQueryFilters()
+                .FirstOrDefault(r => r.TenantId == _tenantId && r.Name == StaticRoleNames.Tenants.Patient);
+
+            if(patientRole == null)
+            {
+                patientRole = _context.Roles
+                    .Add(new Role(null, "Patient", "Patient") { IsStatic = true })
+                    .Entity;
+                _context.SaveChanges();
+            }
+
             // Grant all permissions to admin role
 
             var grantedPermissions = _context.Permissions.IgnoreQueryFilters()
