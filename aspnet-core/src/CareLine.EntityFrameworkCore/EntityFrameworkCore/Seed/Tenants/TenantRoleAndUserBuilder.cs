@@ -50,10 +50,31 @@ namespace CareLine.EntityFrameworkCore.Seed.Tenants
                     .Entity;
                 _context.SaveChanges();
             }
+            //Nurse role seeding
+            var nurseRole = _context.Roles.IgnoreQueryFilters()
+                .FirstOrDefault(r => r.TenantId == _tenantId && r.Name == StaticRoleNames.Tenants.Nurse);
 
-            // Grant all permissions to admin role
+            if(nurseRole == null)
+            {
+                nurseRole = _context.Roles
+                    .Add(new Role(null, "Nurse", "Nurse") { IsStatic = true })
+                    .Entity;
+                _context.SaveChanges();
+            }
+            //Doctor role seeding
+            var doctorRole = _context.Roles.IgnoreQueryFilters()
+                .FirstOrDefault(r => r.TenantId == _tenantId && r.Name == StaticRoleNames.Tenants.Doctor);
 
-            var grantedPermissions = _context.Permissions.IgnoreQueryFilters()
+            if(doctorRole == null)
+            {
+                doctorRole = _context.Roles
+                    .Add(new Role(null, "Doctor", "Doctor") { IsStatic = true })
+                    .Entity;
+                _context.SaveChanges();
+            }
+                // Grant all permissions to admin role
+
+                var grantedPermissions = _context.Permissions.IgnoreQueryFilters()
                 .OfType<RolePermissionSetting>()
                 .Where(p => p.TenantId == _tenantId && p.RoleId == adminRole.Id)
                 .Select(p => p.Name)
