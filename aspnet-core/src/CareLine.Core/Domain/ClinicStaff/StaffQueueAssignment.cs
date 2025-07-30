@@ -14,7 +14,7 @@ namespace CareLine.Domain.ClinicStaff
         public Guid QueueId { get; set; }
 
         public Staff Staff { get; set; }
-        public Queue Queue { get; set; }
+        public VisitQueue Queue { get; set; }
         public DateTime AssignedDate { get; set; } 
     }
 }
