@@ -13,9 +13,6 @@ axiosInstance.interceptors.request.use(
     if (typeof window !== "undefined") {
       const token = sessionStorage.getItem("token");
       if (token) {
-        if (!config.headers) {
-          config.headers = {};
-        }
         config.headers["Authorization"] = `Bearer ${token}`;
       }
     }
