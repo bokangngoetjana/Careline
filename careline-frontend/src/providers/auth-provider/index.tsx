@@ -37,6 +37,10 @@ export const AuthProvider = ({children} : { children: React.ReactNode}) => {
     };
 
     const registerStaff = async (user: IUser) => {
+        if(!user.roleName){
+            alert("Please select a role for the staff member.");
+            return;
+        }
         dispatch(registerStaffPending());
         const endpoint: string = '/services/app/Staff/Create'
 
