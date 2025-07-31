@@ -1,5 +1,6 @@
 ﻿using System;
 using Abp.Domain.Entities.Auditing;
+using CareLine.Domain.ClinicStaff;
 using CareLine.Domain.Enum;
 using CareLine.Domain.MedHistory;
 using CareLine.Domain.Patients;
@@ -14,8 +15,8 @@ namespace CareLine.Domain.Tickets
         public Patient Patient { get; set; }
 
 
-        //public Guid? StaffId { get; set; }
-        //public Staff Staff { get; set; }
+        public Guid? StaffId { get; set; }
+        public Staff Staff { get; set; }
 
 
         public Guid QueueId { get; set; }
