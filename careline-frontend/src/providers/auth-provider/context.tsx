@@ -9,6 +9,7 @@ export interface IUser {
   identityNo?: number;
   employeeNo?: string;
   gender?: number;
+  roleName?: string;
   serviceTypeId?: string;
   symptoms?: string;
   userNameOrEmailAddress?: string;
