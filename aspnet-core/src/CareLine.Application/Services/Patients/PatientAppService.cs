@@ -6,6 +6,7 @@ using Abp.Domain.Repositories;
 using Abp.UI;
 using CareLine.Domain.Patients;
 using CareLine.Services.Patients.Dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace CareLine.Services.Patients
 {
@@ -18,7 +19,27 @@ namespace CareLine.Services.Patients
             _patientRepository = patientRepository;
             _patientManager = patientManager;
         }
+        public async Task<PatientprofileDto> GetPatientProfileAsync()
+        {
+            var patient = await _patientRepository
+                .GetAll()
+                .Include(s => s.UserAccount) 
+                .FirstOrDefaultAsync(s => s.UserAccount != null && s.UserAccount.Id == AbpSession.UserId.Value);
 
+            if (patient == null)
+            {
+                throw new UserFriendlyException("Patient profile not found.");
+            }
+
+            return new PatientprofileDto
+            {
+                Id = patient.Id,
+                Name = patient.Name,
+                Surname = patient.Surname,
+                UserName = patient.UserAccount.UserName,
+                IdentityNo = patient.IdentityNo,
+            };
+        }
         public override async Task<PatientDto> CreateAsync(CreatePatientDto input)
         {
             try
