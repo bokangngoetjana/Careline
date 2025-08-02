@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using Abp.Domain.Entities.Auditing;
+using CareLine.Authorization.Users;
 
 namespace CareLine.Domain.Persons
 {
@@ -15,5 +16,6 @@ namespace CareLine.Domain.Persons
         public string UserName { get; set; }
         [NotMapped]
         public string Password { get; set; }
+        public virtual User UserAccount { get; set; }
     }
 }

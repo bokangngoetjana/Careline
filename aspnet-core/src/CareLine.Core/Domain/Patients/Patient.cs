@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using CareLine.Domain.Enum;
 using CareLine.Domain.Persons;
 using CareLine.Domain.Tickets;

@@ -1,0 +1,38 @@
+import { createContext } from "react";
+
+export interface ITicket {
+  id?: string;
+  patientId?: string;
+  staffId?: string;
+  queueId?: string;
+  serviceTypeId?: string;
+  symptoms?: string;
+  queueNumber?: number;
+  status?: number;
+  checkInTime?: string;   
+}
+export interface ICreateTicket{
+    patientId: string;
+    queueId: string;
+    serviceTypeId: string;
+    symptoms: string;
+}
+export interface ITicketStateContext {
+    isPending: boolean;
+    isSuccess: boolean;
+    isError: boolean;
+    tickets?: ITicket[];
+}
+export interface ITicketActionContext {
+    createTicket: (ticket: ICreateTicket) => Promise<void>;
+    getMyTickets: () => Promise<void>;
+}
+export const INITIAL_STATE: ITicketStateContext = {
+    isPending: false,
+    isSuccess: false,
+    isError: false,
+    tickets: [],
+};
+
+export const TicketStateContext = createContext<ITicketStateContext>(INITIAL_STATE);
+export const TicketActionContext = createContext<ITicketActionContext>(undefined!);

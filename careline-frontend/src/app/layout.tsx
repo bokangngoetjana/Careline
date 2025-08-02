@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/providers/auth-provider";
 import "./globals.css";
+import { PatientProvider } from "@/providers/patient-provider";
 
 export const metadata: Metadata = {
   title: "CareLine",
@@ -14,11 +15,13 @@ export default function RootLayout({
 }>) {
   return (
     <AuthProvider>
-      <html lang="en">
-      <body>
-        {children}
-      </body>
-    </html>
+      <PatientProvider>
+        <html lang="en">
+          <body>
+            {children}
+          </body>
+       </html>
+      </PatientProvider>
     </AuthProvider>
   );
 }

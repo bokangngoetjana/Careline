@@ -47,7 +47,8 @@ namespace CareLine.Domain.Patients
                 Surname = surname,
                 Email = email,
                 IdentityNo = identityNo,
-                Gender = gender
+                Gender = gender,
+                UserAccount = user
             };
             // 3. Associate the user with the patient
             await _patientRepository.InsertAsync(patient);
