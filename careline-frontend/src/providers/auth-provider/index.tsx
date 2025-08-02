@@ -28,7 +28,7 @@ export const AuthProvider = ({children} : { children: React.ReactNode}) => {
 
         await instance.post(endpoint, user)
         .then((response) => {
-            dispatch(registerPatientSuccess(response.data))
+            dispatch(registerPatientSuccess(response.data)) 
             router.push('/login');
         }).catch((error) => {
             dispatch(registerPatientError())
@@ -58,34 +58,63 @@ export const AuthProvider = ({children} : { children: React.ReactNode}) => {
         dispatch(loginUserPending());
         const endpoint = `/TokenAuth/Authenticate`;
 
-        await instance.post(endpoint, user)
-            .then((response) => {
-                const token = response.data.result.accessToken;
-                const decoded = decodeToken(token);
-                const userRole = decoded[AbpTokenProperies.role];
-                const userId = decoded[AbpTokenProperies.nameidentifier];
+        try {
+            const response = await instance.post(endpoint, user);
+            const token = response.data.result.accessToken;
+            const decoded = decodeToken(token);
+            const userRole = decoded[AbpTokenProperies.role];
+            const userId = decoded[AbpTokenProperies.nameidentifier];
 
-                sessionStorage.setItem("token", token);
-                sessionStorage.setItem("role", userRole);
-                sessionStorage.setItem("Id", userId);
+            sessionStorage.setItem("token", token);
+            sessionStorage.setItem("role", userRole);
+            sessionStorage.setItem("Id", userId);
 
-                dispatch(loginUserSuccess(token));
+            let profileEndpoint = "";
+            if (userRole === "Patient")
+                profileEndpoint = "/services/app/Patient/GetPatientProfile";
+            else if (userRole === "Doctor")
+                profileEndpoint = "/services/app/Staff/GetDoctorProfile";
 
-                // Redirect based on role
-                if (userRole === "Patient") {
-                    router.push("/patient");
-                } else if (userRole === "Doctor") {
-                    router.push("/doctor");
-                } else if (userRole === "Nurse") {
-                    router.push("/nurse");
-                } else {
-                    router.push("/homepage");
+            if (profileEndpoint) {
+                try {
+                    const profileRes = await instance.get(profileEndpoint, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    const profileData = profileRes.data.result;
+
+                    if (profileData?.id) {
+                        if (userRole === "Patient") {
+                            sessionStorage.setItem("patientId", profileData.id);
+                        } else if (userRole === "Doctor") {
+                            sessionStorage.setItem("doctorId", profileData.id);
+                        } else if (userRole === "Nurse") {
+                            sessionStorage.setItem("nurseId", profileData.id);
+                        }
+                    }
+                    // Store name for UI greetings
+                    if (profileData?.name && profileData?.surname) {
+                        sessionStorage.setItem("userFullName", `${profileData.name} ${profileData.surname}`);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch user profile", error);
                 }
-            })
-            .catch((error) => {
-                dispatch(loginUserError());
-                console.error(error);
-            });
+            }
+            dispatch(loginUserSuccess(token));
+
+            // Redirect based on role
+            if (userRole === "Patient") {
+                router.push("/patient");
+            } else if (userRole === "Doctor") {
+                router.push("/doctor");
+            } else if (userRole === "Nurse") {
+                router.push("/nurse");
+            } else {
+                router.push("/homepage");
+            }
+        } catch (error) {
+            dispatch(loginUserError());
+            console.error(error);
+        }
     };
 return(
     <AuthStateContext.Provider value={state}>

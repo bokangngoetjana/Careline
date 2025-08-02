@@ -1,0 +1,52 @@
+"use client"
+import { axiosInstance } from "@/utils/axiosInstance";
+import React, {useReducer, useContext} from "react";
+import {IPatient, INITIAL_STATE, PatientProfileActionContext, PatientProfileStateContext, IPatientActionContext } from "./context";
+import {
+    getProfilePending,
+    getProfileSuccess,
+    getProfileError,
+    updateProfilePending,
+    updateProfileSuccess,
+    updateProfileError,
+} from "./actions";
+import { PatientReducer } from "./reducer";
+
+export const PatientProvider = ({children} : {children: React.ReactNode}) => {
+    const [state, dispatch] = useReducer(PatientReducer, INITIAL_STATE);
+    const instance = axiosInstance;
+
+    const getProfile = async () => {
+        try{
+            dispatch(getProfilePending());
+            const { data } = await instance.get("/services/app/Patient/GetPatientProfile");
+            dispatch(getProfileSuccess(data.result));
+        }catch(error: any){
+            dispatch(getProfileError(error?.message));
+        }
+    }
+    const updateProfile = async (data: Partial<IPatient>) => {
+    try {
+      dispatch(updateProfilePending());
+      const { data: updated } = await axiosInstance.put("/services/app/Patient/UpdatePatientProfile", data);
+      dispatch(updateProfileSuccess(updated.result));
+    } catch (error: any) {
+      dispatch(updateProfileError(error?.message || "Failed to update patient profile"));
+    }
+  };
+  const setProfile = (profile: IPatient | null) => {
+    dispatch(getProfileSuccess(profile as IPatient));
+  };
+
+  const resetProfile = () => {
+    dispatch(getProfileSuccess(null));
+  };
+
+  return(
+    <PatientProfileStateContext.Provider value={state}>
+        <PatientProfileActionContext.Provider value={{getProfile, updateProfile, setProfile, resetProfile}}>
+            {children}
+        </PatientProfileActionContext.Provider>
+    </PatientProfileStateContext.Provider>
+  );
+};
