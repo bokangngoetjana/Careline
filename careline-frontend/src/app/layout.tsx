@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import { AuthProvider } from "@/providers/auth-provider";
 import "./globals.css";
 import { PatientProvider } from "@/providers/patient-provider";
+import { TicketProvider } from "@/providers/ticket-provider";
+import { ServiceTypeProvider } from "@/providers/serviceType-Provider";
+import { VisitQueueProvider } from "@/providers/queue-provider";
 
 export const metadata: Metadata = {
   title: "CareLine",
@@ -13,15 +16,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return (
-    <AuthProvider>
-      <PatientProvider>
-        <html lang="en">
-          <body>
-            {children}
-          </body>
-       </html>
-      </PatientProvider>
-    </AuthProvider>
+ return (
+    <html lang="en">
+      <body>
+        <AuthProvider>
+          <PatientProvider>
+            <TicketProvider>
+              <ServiceTypeProvider>
+                <VisitQueueProvider>
+                  {children}
+                </VisitQueueProvider>
+              </ServiceTypeProvider>
+            </TicketProvider>
+          </PatientProvider>
+        </AuthProvider>
+      </body>
+    </html>
   );
 }
