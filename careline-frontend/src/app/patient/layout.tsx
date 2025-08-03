@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState, useEffect} from "react";
 import { Layout, Menu, theme } from "antd";
 import {
   HomeOutlined,
@@ -25,8 +25,11 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-  const router = useRouter();
 
+  const router = useRouter();
+  const [patientName, setPatientName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  
   const handleLogout = () => {
     sessionStorage.clear();
     router.push("/login");
