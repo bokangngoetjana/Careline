@@ -26,6 +26,8 @@ export interface ITicketStateContext {
 export interface ITicketActionContext {
     createTicket: (ticket: ICreateTicket) => Promise<void>;
     getMyTickets: () => Promise<void>;
+    getTicketsByQueueId: (queueId: string) => Promise<void>
+    getTicketsByPatientId: (patientId: string) => Promise<void>;
 }
 export const INITIAL_STATE: ITicketStateContext = {
     isPending: false,
