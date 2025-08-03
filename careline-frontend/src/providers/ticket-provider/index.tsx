@@ -33,7 +33,45 @@ export const TicketProvider = ({children} : {children: React.ReactNode}) => {
             dispatch(createTicketError());
         }
     };
-      const getMyTickets = async () => {
+
+    const getTicketsByQueueId = async (queueId: string) => {
+        dispatch(getTicketsPending());
+
+        try{
+            const token = sessionStorage.getItem("token");
+            if(!token)
+                throw new Error("User not authenticated");
+
+            const endpoint = `/services/app/Ticket/GetTicketsByQueueId?queueId=${queueId}`;
+            const { data } = await instance.get(endpoint, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            dispatch(getTicketsSuccess(data.result || []));
+        } catch(error){
+            console.error("Failed to fetch tickets by queue Id", error);
+            dispatch(getTicketsError());
+        }
+    };
+    
+    const getTicketsByPatientId = async (patientId: string) => {
+        dispatch(getTicketsPending());
+        try{
+            const token = sessionStorage.getItem("token");
+            if (!token) throw new Error("User not authenticated");
+
+             const endpoint = `/services/app/Ticket/GetTicketsByPatientId?patientId=${patientId}`;
+            const { data } = await instance.get(endpoint, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            dispatch(getTicketsSuccess(data.result || []));
+        } catch (error) {
+            console.error("Failed to fetch tickets by patientId", error);
+            dispatch(getTicketsError());
+        }
+    };
+
+    const getMyTickets = async () => {
     dispatch(getTicketsPending());
     try {
       const token = sessionStorage.getItem("token");
@@ -46,7 +84,7 @@ export const TicketProvider = ({children} : {children: React.ReactNode}) => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      dispatch(getTicketsSuccess(data.result || []));
+      dispatch(getTicketsSuccess(data.result?.items || []));
     } catch (error) {
       console.error("Failed to fetch tickets", error);
       dispatch(getTicketsError());
@@ -54,7 +92,7 @@ export const TicketProvider = ({children} : {children: React.ReactNode}) => {
   };
 return(
   <TicketStateContext.Provider value={state}>
-      <TicketActionContext.Provider value={{ createTicket, getMyTickets }}>
+      <TicketActionContext.Provider value={{ createTicket, getMyTickets, getTicketsByPatientId, getTicketsByQueueId }}>
         {children}
       </TicketActionContext.Provider>
     </TicketStateContext.Provider>   

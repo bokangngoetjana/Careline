@@ -30,6 +30,12 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
   const [patientName, setPatientName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   
+  useEffect(() => {
+    const name = sessionStorage.getItem("userFullName");
+    if(name)
+      setPatientName(name);
+  }, []);
+
   const handleLogout = () => {
     sessionStorage.clear();
     router.push("/login");
@@ -74,7 +80,7 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
             alignItems: "center",
           }}
         >
-          <span style={{ fontWeight: "bold", color: "#292966" }}>Welcome, Patient</span>
+          <span style={{ fontWeight: "bold", color: "#292966" }}>Welcome, {patientName ?? "Patient"}</span>
         </Header>
         <Content style={{ margin: "24px 16px 0" }}>
           <div
