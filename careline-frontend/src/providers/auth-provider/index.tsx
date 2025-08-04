@@ -16,6 +16,7 @@ import {
     loginUserSuccess,
     loginUserError 
 } from "./actions"
+import { profile } from "console";
 
 export const AuthProvider = ({children} : { children: React.ReactNode}) => {
     const [state, dispatch] = useReducer(AuthReducer, INITIAL_STATE);
@@ -74,6 +75,8 @@ export const AuthProvider = ({children} : { children: React.ReactNode}) => {
                 profileEndpoint = "/services/app/Patient/GetPatientProfile";
             else if (userRole === "Doctor")
                 profileEndpoint = "/services/app/Staff/GetDoctorProfile";
+            else if (userRole === "Nurse")
+                profileEndpoint = "/services/app/Staff/GetNurseProfile";
 
             if (profileEndpoint) {
                 try {

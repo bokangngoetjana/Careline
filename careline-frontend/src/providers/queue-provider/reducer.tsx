@@ -16,6 +16,18 @@ export const VisitQueueReducer = handleActions<IVisitQueueStateContext, IVisitQu
       ...state,
       ...action.payload
     }),
+    [VisitQueueEnum.getActiveVisitQueuePending]: (state, action) => ({
+      ...state,
+      ...action.payload
+    }),
+    [VisitQueueEnum.getActiveVisitQueueSuccess]: (state, action) => ({
+      ...state,
+      ...action.payload
+    }),
+    [VisitQueueEnum.getActiveVisitQueueError]: (state, action) => ({
+      ...state,
+      ...action.payload
+    }),
   },
   INITIAL_STATE
 );

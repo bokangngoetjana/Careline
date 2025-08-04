@@ -44,15 +44,9 @@ const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ children }) 
         />
       </Sider>
 
-        <Header className={styles.header}>
-          <Typography.Title level={4} style={{ color: 'white', margin: 0 }}>
-            Medical Staff Dashboard
-          </Typography.Title>
-        </Header>
-
         <Content className={styles.content}>
           {children}
-        </Content>\
+        </Content>
     </Layout>
   );
 };

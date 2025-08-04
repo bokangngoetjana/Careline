@@ -5,6 +5,7 @@ using Abp.Domain.Repositories;
 using Abp.UI;
 using CareLine.Domain.ClinicStaff;
 using CareLine.Services.ClinicStaff.Dto;
+using Microsoft.EntityFrameworkCore;
 
 namespace CareLine.Services.ClinicStaff
 {
@@ -18,7 +19,6 @@ namespace CareLine.Services.ClinicStaff
             _staffManager = staffManager;
             _staffRepository = staffRepository;
         }
-
         public override async Task<StaffDto> CreateAsync(CreateStaffDto input)
         {
             try
@@ -40,6 +40,26 @@ namespace CareLine.Services.ClinicStaff
             {
                 throw new UserFriendlyException("An error occurred while creating staff: " + ex.Message, ex);
             }
+        }
+        public async Task<StaffProfileDto> GetStaffProfileAsync()
+        {
+            var staff = await _staffRepository
+                .GetAll()
+                .Include(s => s.UserAccount)
+                .FirstOrDefaultAsync(s => s.UserAccount != null && s.UserAccount.Id == AbpSession.UserId.Value);
+
+            if (staff == null)
+            {
+                throw new UserFriendlyException("Staff profile not found");
+            }
+            return new StaffProfileDto
+            {
+                Id = staff.Id,
+                Name = staff.Name,
+                Surname = staff.Surname,
+                EmployeeNo = staff.EmployeeNo,
+                UserName = staff.UserName,
+            };
         }
     }
 }

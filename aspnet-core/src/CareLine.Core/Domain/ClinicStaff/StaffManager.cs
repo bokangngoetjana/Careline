@@ -54,7 +54,8 @@ namespace CareLine.Domain.ClinicStaff
                 IdentityNo = identityNo,
                 Gender = gender,
                 EmployeeNo = employeeNo,
-                RoleName = roleName
+                RoleName = roleName,
+                UserAccount = user
             };
 
             await _staffRepository.InsertAsync(staff);

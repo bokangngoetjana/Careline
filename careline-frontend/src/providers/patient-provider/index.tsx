@@ -1,6 +1,6 @@
 "use client"
 import { axiosInstance } from "@/utils/axiosInstance";
-import React, {useReducer, useContext} from "react";
+import React, {useReducer} from "react";
 import {IPatient, INITIAL_STATE, PatientProfileActionContext, PatientProfileStateContext, IPatientActionContext } from "./context";
 import {
     getProfilePending,
