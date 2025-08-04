@@ -5,7 +5,10 @@ using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using Abp.Domain.Repositories;
+using CareLine.Domain.Patients;
+using CareLine.Domain.Queues;
 using CareLine.Domain.Tickets;
+using CareLine.Services.Notifications;
 using CareLine.Services.Tickets.Dto;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,21 +18,66 @@ namespace CareLine.Services.Tickets
     {
         private readonly TicketManager _ticketManager;
         private readonly IRepository<Ticket, Guid> _ticketRepository;
+        private readonly IRepository<Patient, Guid> _patientRepository;
+        private readonly IRepository<VisitQueue, Guid> _queueRepository;
+        private readonly INotificationService _notificationService;
 
-        public TicketAppService(IRepository<Ticket, Guid> repository, TicketManager ticketManager) : base(repository)
+        public TicketAppService(
+            IRepository<Ticket, Guid> repository,
+            TicketManager ticketManager,
+            IRepository<Patient, Guid> patientRepository,
+            IRepository<VisitQueue, Guid> queueRepository,
+            INotificationService notificationService) : base(repository)
         {
             _ticketManager = ticketManager;
             _ticketRepository = repository;
+            _patientRepository = patientRepository;
+            _queueRepository = queueRepository;
+            _notificationService = notificationService;
         }
         public override async Task<TicketDto> CreateAsync(CreateTicketDto input)
         {
             var ticket = await _ticketManager.CreateTicketAsync(input.PatientId, input.QueueId, input.ServiceTypeId, input.Symptoms);
-            return ObjectMapper.Map<TicketDto>(ticket);
+
+            var ticketDto = ObjectMapper.Map<TicketDto>(ticket);
+
+            var patient = await _patientRepository.FirstOrDefaultAsync(input.PatientId);
+            var queue = await _queueRepository.FirstOrDefaultAsync(input.QueueId);
+
+            // Send real-time notifications
+            if (patient != null && queue != null)
+            {
+                await _notificationService.NotifyTicketCreatedAsync(
+                    ticketDto,
+                    $"{patient.Name} {patient.Surname}",
+                    queue.Name
+                );
+
+                // Also notify that the queue has been updated
+                await _notificationService.NotifyQueueUpdatedAsync(input.QueueId);
+            }
+
+            return ticketDto;
         }
         public async Task<TicketDto> UpdateTicketStatus(UpdateTicketStatusDto input)
         {
             var ticket = await _ticketManager.UpdateTicketStatusAsync(input.Id, input.Status, input.StaffId);
-            return ObjectMapper.Map<TicketDto>(ticket);
+            var ticketDto =  ObjectMapper.Map<TicketDto>(ticket);
+
+            var patient = await _patientRepository.FirstOrDefaultAsync(ticket.PatientId);
+            // Send real-time notifications
+            if (patient != null)
+            {
+                await _notificationService.NotifyTicketStatusUpdatedAsync(
+                    ticketDto,
+                    $"{patient.Name} {patient.Surname}"
+                );
+
+                // Also notify that the queue has been updated
+                await _notificationService.NotifyQueueUpdatedAsync(ticket.QueueId);
+            }
+
+            return ticketDto;
         }
         public async Task<List<TicketDto>> GetTicketsByQueueId(Guid queueId)
         {

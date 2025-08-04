@@ -4,6 +4,8 @@ import { Button, Card, Typography, Table } from "antd";
 import { UserAddOutlined } from "@ant-design/icons";
 import TicketModal from "@/components/modal/ticket-modal";
 import { ITicket, TicketActionContext, TicketStateContext } from "@/providers/ticket-provider/context";
+import { useSignalRConnection } from "@/hooks/useSignalRConnection";
+//import { NotificationDisplay } from "@/components/NotificationDisplay";
 
 const { Title } = Typography;
 
@@ -11,7 +13,7 @@ export default function PatientHomePage() {
   const [modalOpen, setModalOpen] = useState(false);
   const { getMyTickets } = useContext(TicketActionContext);
   const { tickets, isPending } = useContext(TicketStateContext);
-
+  //const { isConnected } = useSignalRConnection();
   const patientId = typeof window !== "undefined" ? sessionStorage.getItem("patientId") : null;
 
   useEffect(() => {

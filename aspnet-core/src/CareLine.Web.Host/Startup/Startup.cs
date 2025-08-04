@@ -17,6 +17,9 @@ using Abp.AspNetCore.SignalR.Hubs;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System.IO;
+using CareLine.Services.EmailService;
+using CareLine.Services.Notifications;
+using CareLine.Hubs;
 
 namespace CareLine.Web.Host.Startup
 {
@@ -46,7 +49,12 @@ namespace CareLine.Web.Host.Startup
             IdentityRegistrar.Register(services);
             AuthConfigurer.Configure(services, _appConfiguration);
 
-            services.AddSignalR();
+            services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
+            services.AddTransient<IEmailSender, EmailSender>();
+            services.AddTransient<INotificationService, NotificationService>();
 
             // Configure CORS for angular2 UI
             services.AddCors(
@@ -101,6 +109,7 @@ namespace CareLine.Web.Host.Startup
                 endpoints.MapHub<AbpCommonHub>("/signalr");
                 endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapControllerRoute("defaultWithArea", "{area}/{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapHub<QueueHub>("/queueHub");
             });
 
             // Enable middleware to serve generated Swagger as a JSON endpoint
