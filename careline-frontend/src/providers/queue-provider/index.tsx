@@ -11,12 +11,33 @@ import { VisitQueueReducer } from "./reducer";
 import {
   getVisitQueuesPending,
   getVisitQueuesSuccess,
-  getVisitQueuesError
+  getVisitQueuesError,
+  getActiveVisitQueuePending,
+  getActiveVisitQueueSuccess,
+  getActiveVisitQueueError
 } from "./actions";
 
 export const VisitQueueProvider = ({ children }: { children: React.ReactNode }) => {
   const [state, dispatch] = useReducer(VisitQueueReducer, INITIAL_STATE);
   const instance = axiosInstance;
+
+  const getActiveVisitQueue = async () => {
+    dispatch(getActiveVisitQueuePending());
+  const endpoint: string = "/services/app/VisitQueue/GetActiveQueue";
+   try {
+    const token = sessionStorage.getItem("token");
+    if (!token) throw new Error("User not authenticated");
+
+    const { data } = await instance.get(endpoint, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    dispatch(getActiveVisitQueueSuccess(data.result));
+  } catch (error) {
+    console.error("Failed to fetch active visit queue", error);
+    dispatch(getActiveVisitQueueError());
+  }
+  };
 
   const getVisitQueues = async () => {
     dispatch(getVisitQueuesPending());
@@ -30,7 +51,6 @@ export const VisitQueueProvider = ({ children }: { children: React.ReactNode }) 
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // ABP typically returns { result: { items: [] } }
       dispatch(getVisitQueuesSuccess(data.result.items));
     } catch (error) {
       console.error("Failed to fetch visit queues", error);
@@ -40,7 +60,7 @@ export const VisitQueueProvider = ({ children }: { children: React.ReactNode }) 
 
   return (
     <VisitQueueStateContext.Provider value={state}>
-      <VisitQueueActionContext.Provider value={{ getVisitQueues }}>
+      <VisitQueueActionContext.Provider value={{ getVisitQueues, getActiveVisitQueue }}>
         {children}
       </VisitQueueActionContext.Provider>
     </VisitQueueStateContext.Provider>
