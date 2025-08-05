@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using Abp.Application.Services;
 using Abp.Application.Services.Dto;
 using Abp.Domain.Repositories;
+using Abp.UI;
+using CareLine.Domain.Enum;
 using CareLine.Domain.Tickets;
 using CareLine.Services.Tickets.Dto;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +18,24 @@ namespace CareLine.Services.Tickets
         private readonly TicketManager _ticketManager;
         private readonly IRepository<Ticket, Guid> _ticketRepository;
 
+        public async Task AssignStaffToTicketAsync(AssignmentDto input)
+        {
+            var ticket = await _ticketRepository
+                .FirstOrDefaultAsync(t => t.Id == input.TicketId);
+
+            if(ticket == null)
+            {
+                throw new UserFriendlyException("Ticket not found");
+            }
+
+            if(ticket.Status != TicketStatus.Waiting)
+                throw new UserFriendlyException("Ticket is not in a Waiting state");
+
+            ticket.StaffId = input.StaffId;
+            ticket.Status = TicketStatus.InProgress;
+
+            await _ticketRepository.UpdateAsync(ticket);
+        }
         public TicketAppService(IRepository<Ticket, Guid> repository, TicketManager ticketManager) : base(repository)
         {
             _ticketManager = ticketManager;

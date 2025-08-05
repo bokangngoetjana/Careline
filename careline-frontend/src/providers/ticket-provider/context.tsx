@@ -17,6 +17,11 @@ export interface ICreateTicket{
     serviceTypeId: string;
     symptoms: string;
 }
+export interface IAssignStaff{
+    ticketId: string;
+    staffId: string;
+}
+
 export interface ITicketStateContext {
     isPending: boolean;
     isSuccess: boolean;
@@ -28,6 +33,7 @@ export interface ITicketActionContext {
     getMyTickets: () => Promise<void>;
     getTicketsByQueueId: (queueId: string) => Promise<void>
     getTicketsByPatientId: (patientId: string) => Promise<void>;
+    assignStaffToTicket: (ticketId: string, staffId: string) => Promise<void>;
 }
 export const INITIAL_STATE: ITicketStateContext = {
     isPending: false,

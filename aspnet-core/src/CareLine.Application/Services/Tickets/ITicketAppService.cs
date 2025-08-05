@@ -9,6 +9,7 @@ namespace CareLine.Services.Tickets
 {
     public interface ITicketAppService : IAsyncCrudAppService<TicketDto, Guid, PagedAndSortedResultRequestDto, CreateTicketDto, TicketDto>
     {
+        Task AssignStaffToTicketAsync(AssignmentDto input);
         Task<TicketDto> UpdateTicketStatus(UpdateTicketStatusDto input);
         Task<List<TicketDto>> GetTicketsByQueueId(Guid queueId);
         Task<List<TicketDto>> GetTicketsByPatientId(Guid patientId);

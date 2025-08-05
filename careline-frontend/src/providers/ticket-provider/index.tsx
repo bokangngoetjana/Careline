@@ -9,7 +9,10 @@ import {
     createTicketError,
     getTicketsPending,
     getTicketsSuccess,
-    getTicketsError
+    getTicketsError,
+    assignStaffPending,
+    assignStaffSuccess,
+    assignStaffError
 } from "./actions";
 
 export const TicketProvider = ({children} : {children: React.ReactNode}) => {
@@ -71,6 +74,26 @@ export const TicketProvider = ({children} : {children: React.ReactNode}) => {
         }
     };
 
+    const assignStaffToTicket = async (ticketId: string, staffId: string) => {
+        dispatch(assignStaffPending());
+        try{
+            const staffId = sessionStorage.getItem("nurseId");
+            const token = sessionStorage.getItem("token");
+            if (!token) throw new Error("User not authenticated");
+            if (!staffId) throw new Error("No staffId found in sessionStorage");
+
+            const endpoint = `/services/app/Ticket/AssignStaffToTicket`;
+            const payload = { ticketId, staffId};
+
+            await instance.post(endpoint, payload, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            dispatch(assignStaffSuccess({ticketId, staffId}));
+        } catch (error){
+            console.error("Failed to assign staff to ticket", error);
+            dispatch(assignStaffError());
+        }
+    }
     const getMyTickets = async () => {
     dispatch(getTicketsPending());
     try {
@@ -92,7 +115,7 @@ export const TicketProvider = ({children} : {children: React.ReactNode}) => {
   };
 return(
   <TicketStateContext.Provider value={state}>
-      <TicketActionContext.Provider value={{ createTicket, getMyTickets, getTicketsByPatientId, getTicketsByQueueId }}>
+      <TicketActionContext.Provider value={{ createTicket, getMyTickets, getTicketsByPatientId, getTicketsByQueueId, assignStaffToTicket }}>
         {children}
       </TicketActionContext.Provider>
     </TicketStateContext.Provider>   
