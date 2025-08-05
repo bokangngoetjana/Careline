@@ -9,7 +9,8 @@ const NurseDashboard: React.FC = () => {
   const { styles } = useStyles();
   const { getActiveVisitQueue } = useVisitQueueActions();
   const { visitQueues, isPending} = useVisitQueueState();
-
+  const nurseId = typeof window !== "undefined" ? sessionStorage.getItem("nurseId") : null;
+  
   useEffect(() => {
     getActiveVisitQueue();
   }, []);

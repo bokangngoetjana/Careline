@@ -73,10 +73,8 @@ export const AuthProvider = ({children} : { children: React.ReactNode}) => {
             let profileEndpoint = "";
             if (userRole === "Patient")
                 profileEndpoint = "/services/app/Patient/GetPatientProfile";
-            else if (userRole === "Doctor")
-                profileEndpoint = "/services/app/Staff/GetDoctorProfile";
-            else if (userRole === "Nurse")
-                profileEndpoint = "/services/app/Staff/GetNurseProfile";
+            else if (userRole === "Doctor" || userRole === "Nurse")
+                profileEndpoint = "/services/app/Staff/GetStaffProfile";
 
             if (profileEndpoint) {
                 try {
