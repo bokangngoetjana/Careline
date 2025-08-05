@@ -1,6 +1,6 @@
 "use client";
 import { axiosInstance } from "@/utils/axiosInstance";
-import React, { useReducer, useContext } from "react";
+import React, { useReducer, useContext, useEffect } from "react";
 import {
   IStaff,
   INITIAL_STATE,
@@ -22,8 +22,8 @@ export const StaffProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       dispatch(getProfilePending());
       const { data } = await instance.get("/services/app/Staff/GetStaffProfile");
-
       const profileData = data.result;
+
       sessionStorage.setItem("staffId", profileData.id);
       sessionStorage.setItem("staffFullName", `${profileData.name} ${profileData.surname}`);
 
@@ -42,7 +42,12 @@ export const StaffProvider = ({ children }: { children: React.ReactNode }) => {
     sessionStorage.removeItem("staffId");
     sessionStorage.removeItem("staffFullName");
   };
-
+    useEffect(() => {
+    const role = sessionStorage.getItem("role");
+    if (role === "Nurse" || role === "Doctor") {
+      getProfile();
+    }
+  }, []);
   return (
     <StaffProfileStateContext.Provider value={state}>
       <StaffProfileActionContext.Provider
