@@ -27,4 +27,16 @@ export const TicketReducer = handleActions<ITicketStateContext, ITicketStateCont
         ...state,
         ...action.payload,
     }),
+    [TicketActionEnum.assignStaffPending]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [TicketActionEnum.assignStaffSuccess]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [TicketActionEnum.assignStaffError]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
 }, INITIAL_STATE)

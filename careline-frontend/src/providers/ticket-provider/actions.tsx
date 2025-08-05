@@ -1,5 +1,6 @@
 import { createAction } from "redux-actions";
 import { ITicket, ITicketStateContext } from "./context";
+import { create } from "domain";
 
 export enum TicketActionEnum {
   // Create Ticket
@@ -10,6 +11,10 @@ export enum TicketActionEnum {
   getTicketsPending = "GET_TICKETS_PENDING",
   getTicketsSuccess = "GET_TICKETS_SUCCESS",
   getTicketsError = "GET_TICKETS_ERROR",
+
+  assignStaffPending = "ASSIGN_STAFF_PENDING",
+  assignStaffSuccess = "ASSIGN_STAFF_SUCCESS",
+  assignStaffError = "ASSIGN_STAFF_ERROR",
 }
 export const createTicketPending = createAction<ITicketStateContext>(
     TicketActionEnum.createTicketPending, () => ({
@@ -59,5 +64,30 @@ export const getTicketsError = createAction<ITicketStateContext>(
     isPending: false,
     isSuccess: false,
     isError: true
+  })
+);
+
+//assign staff
+export const assignStaffPending = createAction<ITicketStateContext>(
+  TicketActionEnum.assignStaffPending, () => ({
+    isPending: true,
+    isSuccess: false,
+    isError: false
+  })
+);
+export const assignStaffSuccess = createAction<ITicketStateContext, {ticketId: string, staffId: string}>(
+  TicketActionEnum.assignStaffSuccess, ({ticketId, staffId}) => ({
+    isPending: false,
+    isSuccess: true,
+    isError: false,
+    ticketId,
+    staffId,
+  })
+);
+export const assignStaffError = createAction<ITicketStateContext>(
+  TicketActionEnum.assignStaffError, () => ({
+    isPending: false,
+    isSuccess: false,
+    isError: true 
   })
 );

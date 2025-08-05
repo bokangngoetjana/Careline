@@ -22,19 +22,14 @@ export const StaffProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       dispatch(getProfilePending());
       const { data } = await instance.get("/services/app/Staff/GetStaffProfile");
-      const profileData = data.result;
-
-      sessionStorage.setItem("staffId", profileData.id);
-      sessionStorage.setItem("staffFullName", `${profileData.name} ${profileData.surname}`);
-
-      dispatch(getProfileSuccess(profileData));
+      dispatch(getProfileSuccess(data.result));
     } catch (error: any) {
       dispatch(getProfileError(error?.message || "Failed to load staff profile"));
     }
   };
 
   const setProfile = (profile: IStaff | null) => {
-    dispatch(getProfileSuccess(profile));
+    dispatch(getProfileSuccess(profile as IStaff));
   };
 
   const resetProfile = () => {
