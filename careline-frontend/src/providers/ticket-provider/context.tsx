@@ -34,6 +34,8 @@ export interface ITicketActionContext {
     getTicketsByQueueId: (queueId: string) => Promise<void>
     getTicketsByPatientId: (patientId: string) => Promise<void>;
     assignStaffToTicket: (ticketId: string, staffId: string) => Promise<void>;
+    updateTicketStatus: (ticketId: string, status: number, staffId?:string) => Promise<void>;
+    deleteTicket: (ticketId: string) => Promise<void>
 }
 export const INITIAL_STATE: ITicketStateContext = {
     isPending: false,

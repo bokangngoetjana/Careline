@@ -1,54 +1,107 @@
 "use client";
-import React, { useState, useEffect, useContext } from "react";
-import { Button, Card, Typography, Table } from "antd";
+import React, { useState, useEffect, useContext, useRef } from "react";
+import { Button, Card, Typography, Table, Tag, Popconfirm, message } from "antd";
 import { UserAddOutlined } from "@ant-design/icons";
 import TicketModal from "@/components/modal/ticket-modal";
 import { ITicket, TicketActionContext, TicketStateContext } from "@/providers/ticket-provider/context";
+import { useVisitQueueState } from "@/providers/queue-provider"; // <-- so we can get queue info
 
 const { Title } = Typography;
 
 export default function PatientHomePage() {
   const [modalOpen, setModalOpen] = useState(false);
-  const { getMyTickets } = useContext(TicketActionContext);
+  const { getMyTickets, deleteTicket } = useContext(TicketActionContext);
   const { tickets, isPending } = useContext(TicketStateContext);
+  const { visitQueues } = useVisitQueueState(); // queues from provider
 
   const patientId = typeof window !== "undefined" ? sessionStorage.getItem("patientId") : null;
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Initial fetch + polling every 2 minutes
   useEffect(() => {
-    if(patientId && getMyTickets) {
-      getMyTickets();
+    if (!patientId) return;
+
+    getMyTickets(); // initial fetch
+
+    if (tickets && tickets.length > 0) {
+      pollingRef.current = setInterval(() => {
+        getMyTickets();
+      }, 120000); // 2 minutes
     }
-  }, []);
 
-  const activeQueueId = tickets?.[0]?.queueId ?? null;
-  const activeQueueTickets = tickets
-    ?.filter((t: ITicket) => t.queueId === activeQueueId)
-    ?.sort((a: ITicket, b: ITicket) => (a.queueNumber ?? 0) - (b.queueNumber ?? 0));
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [patientId, tickets?.length]);
 
-    const columns = [
-      {
-        title: "Queue Number",
-        dataIndex: "queueNumber",
-        key: "queueNumber"
-      },
-      {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        render: (status: number) => {
-          switch (status) {
-            case 1:
-              return "Waiting";
-            case 2:
-              return "Being Served";
-            case 3:
-              return "Completed";
-            default:
-              return "Unknown";
+  // Find the patient's active ticket
+  const myActiveTicket = tickets?.find(
+    (t: ITicket) => t.patientId === patientId && t.status !== 3
+  );
+
+  // Get the queue name for their active ticket
+  const myQueueName = myActiveTicket
+    ? visitQueues?.find((q) => q.id === myActiveTicket.queueId)?.name || "Unknown Queue"
+    : null;
+
+  const handleCancelTicket = async (ticketId: string) => {
+    const updatedTickets = tickets?.filter((t) => t.id !== ticketId);
+
+    await deleteTicket(ticketId);
+    message.success("Your ticket has been cancelled.");
+    await getMyTickets();
+  };
+
+  const columns = [
+    {
+      title: "Queue Number",
+      dataIndex: "queueNumber",
+      key: "queueNumber"
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (status: number) => {
+        switch (status) {
+          case 1:
+            return <Tag color="volcano">Waiting</Tag>;
+          case 2:
+            return <Tag color="blue">Being Served</Tag>;
+          case 3:
+            return <Tag color="green">Completed</Tag>;
+          default:
+            return <Tag>Unknown</Tag>;
         }
       }
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_: any, record: ITicket) =>
+        record.patientId === patientId && record.status === 1 ? (
+          <Popconfirm
+            title="Cancel Ticket"
+            description="Are you sure you want to cancel your ticket?"
+            okText="Yes"
+            cancelText="No"
+            onConfirm={() => handleCancelTicket(record.id!)}
+          >
+            <Button danger>Cancel</Button>
+          </Popconfirm>
+        ) : null
     }
-    ]
+  ];
+
+  const tableData = myActiveTicket
+    ? [
+        {
+          key: myActiveTicket.id,
+          ...myActiveTicket
+        }
+      ]
+    : [];
+
   return (
     <div>
       <Title level={3} style={{ color: "#292966" }}>
@@ -65,24 +118,27 @@ export default function PatientHomePage() {
           size="large"
           style={{ backgroundColor: "#292966", borderColor: "#292966" }}
           onClick={() => setModalOpen(true)}
+          disabled={!!myActiveTicket} // disable if already in queue
         >
-          Join Queue
+          {myActiveTicket ? "Already in Queue" : "Join Queue"}
         </Button>
       </Card>
 
-      <Card title="Current Queue">
-        <Table
-          dataSource={activeQueueTickets?.map((ticket: ITicket) => ({
-            ...ticket,
-            key: ticket.id
-          }))}
-          columns={columns}
-          loading={isPending}
-          pagination={false}
-          rowClassName={(record: ITicket) =>
-            record.patientId === patientId ? "highlight-row" : ""
-          }
-        />
+      {/* Current Ticket */}
+      <Card title={myQueueName ? `My Active Ticket (${myQueueName})` : "My Active Ticket"}>
+        {myActiveTicket ? (
+          <Table
+            dataSource={tableData}
+            columns={columns}
+            loading={isPending}
+            pagination={false}
+            rowClassName={(record: ITicket) =>
+              record.patientId === patientId ? "highlight-row" : ""
+            }
+          />
+        ) : (
+          <p>No active ticket. Please join a queue.</p>
+        )}
       </Card>
 
       {/* Ticket Modal */}

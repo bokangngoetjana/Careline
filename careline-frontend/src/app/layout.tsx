@@ -6,6 +6,7 @@ import { TicketProvider } from "@/providers/ticket-provider";
 import { ServiceTypeProvider } from "@/providers/serviceType-Provider";
 import { VisitQueueProvider } from "@/providers/queue-provider";
 import { StaffProvider } from "@/providers/staff-provider";
+import { MedicalHistoryProvider } from "@/providers/medhistory-provider";
 
 export const metadata: Metadata = {
   title: "CareLine",
@@ -24,11 +25,13 @@ export default function RootLayout({
           <StaffProvider>
           <PatientProvider>
             <TicketProvider>
+              <MedicalHistoryProvider>
               <ServiceTypeProvider>
                 <VisitQueueProvider>
                   {children}
                 </VisitQueueProvider>
               </ServiceTypeProvider>
+              </MedicalHistoryProvider>
             </TicketProvider>
           </PatientProvider>
           </StaffProvider>

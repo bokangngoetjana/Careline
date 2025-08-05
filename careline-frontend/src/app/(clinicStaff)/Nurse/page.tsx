@@ -5,19 +5,25 @@ import { useStyles } from '../Style/style';
 import { useVisitQueueActions, useVisitQueueState } from '@/providers/queue-provider';
 import { useTicketActions, useTicketState } from '@/providers/ticket-provider';
 import { ITicket } from '@/providers/ticket-provider/context';
+import { useMedicalHistoryActions } from '@/providers/medhistory-provider';
+import { AddMedicalHistoryModal } from '@/components/modal/AddMedicalHistoryModal';
 
 const NurseDashboard: React.FC = () => {
   const { styles } = useStyles();
-
   const { getActiveVisitQueue } = useVisitQueueActions();
   const { visitQueues } = useVisitQueueState();
 
-  const { getTicketsByQueueId, assignStaffToTicket } = useTicketActions();
+  const { getTicketsByQueueId, assignStaffToTicket, updateTicketStatus } = useTicketActions();
   const { tickets } = useTicketState();
+
+  const { createMedicalHistory } = useMedicalHistoryActions();
 
   const staffId = typeof window !== 'undefined' ? sessionStorage.getItem('nurseId') : null;
 
   const [localTickets, setLocalTickets] = useState<ITicket[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   // Sync local tickets when provider tickets change
   useEffect(() => {
@@ -39,17 +45,36 @@ const NurseDashboard: React.FC = () => {
   const handleAssign = async (ticketId: string) => {
     if (!staffId) return;
 
-    // Optimistic update for instant UI feedback
     setLocalTickets(prev =>
       prev.map(t =>
         t.id === ticketId ? { ...t, status: 2, staffId } : t
       )
     );
 
-    // Call backend
     await assignStaffToTicket(ticketId, staffId);
 
-    // Re-fetch tickets from backend for accuracy
+    if (visitQueues?.[0]?.id) {
+      await getTicketsByQueueId(visitQueues[0].id);
+    }
+  };
+
+  const handleOpenModal = (ticketId: string) => {
+    setSelectedTicketId(ticketId);
+    setModalOpen(true);
+  };
+
+  const handleSaveMedicalHistory = async (values: any) => {
+    if (!selectedTicketId) return;
+    setSaving(true);
+    await createMedicalHistory({
+      ticketId: selectedTicketId,
+      ...values
+    });
+    await updateTicketStatus(selectedTicketId, 3);
+    setSaving(false);
+    setModalOpen(false);
+    
+    // Refresh tickets after completion
     if (visitQueues?.[0]?.id) {
       await getTicketsByQueueId(visitQueues[0].id);
     }
@@ -80,19 +105,24 @@ const NurseDashboard: React.FC = () => {
       render: (_: any, record: any) => (
         <Space>
           {record.status === 2 && record.staffId === staffId ? (
-            <Button type="default" disabled>
-              Assigned to Me
-            </Button>
-          ) : (
+            <>
+              <Button
+                type="default"
+                onClick={() => handleOpenModal(record.id)}
+              >
+                Add Medical History
+              </Button>
+            </>
+          ) : record.status === 1 ? (
             <Button
               type="primary"
               onClick={() => handleAssign(record.id)}
-              disabled={record.status !== 1}
             >
               Assign to Me
             </Button>
+          ) : (
+            <Button disabled>Completed</Button>
           )}
-          <Button>View Full Queue</Button>
         </Space>
       )
     }
@@ -104,7 +134,7 @@ const NurseDashboard: React.FC = () => {
       id: ticket.id,
       queueId: ticket.queueId,
       queueName: visitQueues?.find(q => q.id === ticket.queueId)?.name ?? '',
-      patientName: ticket.patientId ?? 'Unknown', // Replace with actual name lookup if you have it
+      patientName: ticket.patientId ?? 'Unknown',
       queueNumber: ticket.queueNumber,
       symptoms: ticket.symptoms,
       status: ticket.status,
@@ -115,28 +145,14 @@ const NurseDashboard: React.FC = () => {
     <>
       <Typography.Title level={3}>Welcome Nurse</Typography.Title>
 
-      {/* Active Queue Section */}
       <Card title="Active Queue Details" className={styles.card} style={{ marginBottom: 24 }}>
         {visitQueues && visitQueues.length > 0 ? (
           <>
-            <p>
-              <strong>Name:</strong> {visitQueues[0].name}
-            </p>
-            <p>
-              <strong>Start Time:</strong>{' '}
-              {new Date(visitQueues[0].startTime).toLocaleString()}
-            </p>
-            <p>
-              <strong>End Time:</strong>{' '}
-              {new Date(visitQueues[0].endTime).toLocaleString()}
-            </p>
-            <p>
-              <strong>Status:</strong>{' '}
-              {visitQueues[0].status === 1
-                ? 'Open'
-                : visitQueues[0].status === 2
-                ? 'Paused'
-                : 'Closed'}
+            <p><strong>Name:</strong> {visitQueues[0].name}</p>
+            <p><strong>Start Time:</strong> {new Date(visitQueues[0].startTime).toLocaleString()}</p>
+            <p><strong>End Time:</strong> {new Date(visitQueues[0].endTime).toLocaleString()}</p>
+            <p><strong>Status:</strong> 
+              {visitQueues[0].status === 1 ? 'Open' : visitQueues[0].status === 2 ? 'Paused' : 'Closed'}
             </p>
           </>
         ) : (
@@ -144,10 +160,16 @@ const NurseDashboard: React.FC = () => {
         )}
       </Card>
 
-      {/* Patient Queue Table */}
       <Card title="Today's Patient Queue" className={styles.card}>
         <Table columns={columns} dataSource={tableData} pagination={false} />
       </Card>
+
+      <AddMedicalHistoryModal
+        open={modalOpen}
+        onCancel={() => setModalOpen(false)}
+        onSave={handleSaveMedicalHistory}
+        loading={saving}
+      />
     </>
   );
 };

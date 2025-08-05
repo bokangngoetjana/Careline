@@ -1,6 +1,5 @@
 import { createAction } from "redux-actions";
 import { ITicket, ITicketStateContext } from "./context";
-import { create } from "domain";
 
 export enum TicketActionEnum {
   // Create Ticket
@@ -15,6 +14,14 @@ export enum TicketActionEnum {
   assignStaffPending = "ASSIGN_STAFF_PENDING",
   assignStaffSuccess = "ASSIGN_STAFF_SUCCESS",
   assignStaffError = "ASSIGN_STAFF_ERROR",
+
+  updateTicketStatusPending = "UPDATE_TICKET_STATUS_PENDING",
+  updateTicketStatusSuccess = "UPDATE_TICKET_STATUS_SUCCESS",
+  updateTicketStatusError = "UPDATE_TICKET_STATUS_ERROR", 
+
+  deleteTicketPending = "DELETE_TICKET_PENDING",
+  deleteTicketSuccess = "DELETE_TICKET_SUCCESS",
+  deleteTicketError = "DELETE_TICKET_ERROR",
 }
 export const createTicketPending = createAction<ITicketStateContext>(
     TicketActionEnum.createTicketPending, () => ({
@@ -34,6 +41,29 @@ export const createTicketSuccess = createAction<ITicketStateContext, ITicket>(
 export const createTicketError = createAction<ITicketStateContext>(
   TicketActionEnum.createTicketError,
   () => ({
+    isPending: false,
+    isSuccess: false,
+    isError: true
+  })
+);
+export const updateTicketStatusPending = createAction<ITicketStateContext>(
+  TicketActionEnum.updateTicketStatusPending, () => ({
+    isPending: true,
+    isSuccess: false,
+    isError: false
+  })
+);
+export const updateTicketStatusSuccess = createAction<ITicketStateContext, { ticketId: string, status: number }>(
+  TicketActionEnum.updateTicketStatusSuccess, ({ ticketId, status }) => ({
+    isPending: false,
+    isSuccess: true,
+    isError: false,
+    ticketId,
+    status
+  })
+);
+export const updateTicketStatusError = createAction<ITicketStateContext>(
+  TicketActionEnum.updateTicketStatusError, () => ({
     isPending: false,
     isSuccess: false,
     isError: true
@@ -89,5 +119,33 @@ export const assignStaffError = createAction<ITicketStateContext>(
     isPending: false,
     isSuccess: false,
     isError: true 
+  })
+);
+// Delete ticket
+export const deleteTicketPending = createAction<ITicketStateContext>(
+  TicketActionEnum.deleteTicketPending,
+  () => ({
+    isPending: true,
+    isSuccess: false,
+    isError: false
+  })
+);
+
+export const deleteTicketSuccess = createAction<ITicketStateContext, string>(
+  TicketActionEnum.deleteTicketSuccess,
+  (ticketId: string) => ({
+    isPending: false,
+    isSuccess: true,
+    isError: false,
+    ticketId
+  })
+);
+
+export const deleteTicketError = createAction<ITicketStateContext>(
+  TicketActionEnum.deleteTicketError,
+  () => ({
+    isPending: false,
+    isSuccess: false,
+    isError: true
   })
 );

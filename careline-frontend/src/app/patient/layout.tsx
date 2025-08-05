@@ -18,6 +18,7 @@ const menuItems = [
   { key: "2", icon: <FormOutlined />, label: <Link href="/patient/checkin">Check-In</Link> },
   { key: "3", icon: <ScheduleOutlined />, label: <Link href="/patient/queue">My Queue</Link> },
   { key: "4", icon: <SettingOutlined />, label: <Link href="/patient/settings">Settings</Link> },
+  { key: "6", icon: <FormOutlined />, label: <Link href="/patient/medical-history">Medical History</Link> },
   { key: "5", icon: <LogoutOutlined />, label: "Logout" },
 ];
 
