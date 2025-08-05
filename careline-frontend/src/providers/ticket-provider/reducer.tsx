@@ -39,4 +39,29 @@ export const TicketReducer = handleActions<ITicketStateContext, ITicketStateCont
       ...state,
       ...action.payload,
     }),
+    [TicketActionEnum.updateTicketStatusPending]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [TicketActionEnum.updateTicketStatusSuccess]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [TicketActionEnum.updateTicketStatusError]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [TicketActionEnum.deleteTicketPending]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [TicketActionEnum.deleteTicketSuccess]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    [TicketActionEnum.deleteTicketError]: (state, action) => ({
+      ...state,
+      ...action.payload,
+    }),
+    
 }, INITIAL_STATE)

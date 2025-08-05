@@ -12,7 +12,13 @@ import {
     getTicketsError,
     assignStaffPending,
     assignStaffSuccess,
-    assignStaffError
+    assignStaffError,
+    updateTicketStatusPending,
+    updateTicketStatusSuccess,
+    updateTicketStatusError,
+    deleteTicketPending,
+    deleteTicketSuccess,
+    deleteTicketError
 } from "./actions";
 
 export const TicketProvider = ({children} : {children: React.ReactNode}) => {
@@ -36,7 +42,29 @@ export const TicketProvider = ({children} : {children: React.ReactNode}) => {
             dispatch(createTicketError());
         }
     };
+    const updateTicketStatus = async (ticketId: string, status: number, staffId?: string) => {
+        dispatch(updateTicketStatusPending());
+        try {
+            const token = sessionStorage.getItem("token");
+            if (!token) throw new Error("User not authenticated");
 
+            const endpoint = `/services/app/Ticket/UpdateTicketStatus`;
+            const payload = {
+            id: ticketId,
+            status,
+            staffId: staffId || sessionStorage.getItem("nurseId")
+            };
+
+            await instance.put(endpoint, payload, {
+            headers: { Authorization: `Bearer ${token}` },
+            });
+
+            dispatch(updateTicketStatusSuccess({ ticketId, status }));
+        } catch (error) {
+            console.error("Failed to update ticket status", error);
+            dispatch(updateTicketStatusError());
+        }
+    };
     const getTicketsByQueueId = async (queueId: string) => {
         dispatch(getTicketsPending());
 
@@ -94,6 +122,26 @@ export const TicketProvider = ({children} : {children: React.ReactNode}) => {
             dispatch(assignStaffError());
         }
     }
+
+    const deleteTicket = async (ticketId: string) => {
+        dispatch(deleteTicketPending());
+        try {
+            const token = sessionStorage.getItem("token");
+            if (!token) throw new Error("User not authenticated");
+
+            const endpoint = `/services/app/Ticket/Delete?Id=${ticketId}`;
+            await instance.delete(endpoint, {
+            headers: { Authorization: `Bearer ${token}` }
+            });
+
+            dispatch(deleteTicketSuccess(ticketId));
+            await getMyTickets(); // Refresh list after deleting
+        } catch (error) {
+            console.error("Failed to delete ticket", error);
+            dispatch(deleteTicketError());
+        }
+        };
+
     const getMyTickets = async () => {
     dispatch(getTicketsPending());
     try {
@@ -113,9 +161,10 @@ export const TicketProvider = ({children} : {children: React.ReactNode}) => {
       dispatch(getTicketsError());
     }
   };
+  
 return(
   <TicketStateContext.Provider value={state}>
-      <TicketActionContext.Provider value={{ createTicket, getMyTickets, getTicketsByPatientId, getTicketsByQueueId, assignStaffToTicket }}>
+      <TicketActionContext.Provider value={{ createTicket, getMyTickets, getTicketsByPatientId, getTicketsByQueueId, assignStaffToTicket, updateTicketStatus, deleteTicket }}>
         {children}
       </TicketActionContext.Provider>
     </TicketStateContext.Provider>   
