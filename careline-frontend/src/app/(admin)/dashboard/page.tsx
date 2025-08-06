@@ -1,11 +1,12 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Button, Table, Space, Modal, Form, Input, Select, Popconfirm, message } from 'antd';
+import { Card, Typography, Button, Table, Space, Modal, Form, Input, Select, Popconfirm, message, Spin } from 'antd';
 import { useStyles } from '../Style/style';
 import { axiosInstance } from '@/utils/axiosInstance';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { useVisitQueueActions, useVisitQueueState } from '@/providers/queue-provider';
 import { useStaffProfileActions, useStaffProfileState } from '@/providers/staff-provider';
+import { useTicketActions, useTicketState } from '@/providers/ticket-provider';
 
 const { Option } = Select;
 
@@ -23,10 +24,16 @@ const AdminDashboard: React.FC = () => {
 
   const { getStaff, createStaff, updateStaff, deleteStaff } = useStaffProfileActions();
   const { staffList } = useStaffProfileState();
+  const { tickets, isPending } = useTicketState();
+  const { getAllTickets } = useTicketActions();
 
   // ---- Visit Queue provider hooks ----
   const { getVisitQueues, createVisitQueue, updateVisitQueue, deleteVisitQueue } = useVisitQueueActions();
   const { visitQueues } = useVisitQueueState();
+
+  useEffect(() => {
+    getAllTickets();
+  }, []);
 
   // ---- FETCH ----
   const fetchServiceTypes = async () => {
@@ -163,7 +170,16 @@ const AdminDashboard: React.FC = () => {
       message.error('Failed to delete');
     }
   };
-
+  const ticketColumns = [
+    { title: "Ticket #", dataIndex: "queueNumber" },
+    { title: "Patient ID", dataIndex: "patientId" },
+    { title: "Staff ID", dataIndex: "staffId" },
+    { title: "Queue ID", dataIndex: "queueId" },
+    { title: "Service Type ID", dataIndex: "serviceTypeId" },
+    { title: "Symptoms", dataIndex: "symptoms" },
+    { title: "Status", dataIndex: "status" },
+    { title: "Check-in Time", dataIndex: "checkInTime" },
+  ];
   const columns = {
     serviceTypes: [
       { title: 'Name', dataIndex: 'name' },
@@ -237,7 +253,23 @@ const AdminDashboard: React.FC = () => {
           columns={columns[activeTab]}
         />
       </Card>
-
+       {/* All Tickets Table */}
+      <Card style={{ marginTop: 32 }}>
+        <Typography.Title level={4}>All Tickets</Typography.Title>
+        {isPending ? (
+          <div style={{ textAlign: "center", padding: "20px" }}>
+            <Spin size="large" />
+          </div>
+        ) : (
+          <Table
+            dataSource={tickets || []}
+            columns={ticketColumns}
+            rowKey="id"
+            pagination={{ pageSize: 10 }}
+            bordered
+          />
+        )}
+      </Card>
       <Modal
         open={modalOpen}
         onCancel={() => setModalOpen(false)}

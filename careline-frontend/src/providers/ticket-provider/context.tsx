@@ -31,6 +31,7 @@ export interface ITicketStateContext {
 export interface ITicketActionContext {
     createTicket: (ticket: ICreateTicket) => Promise<void>;
     getMyTickets: () => Promise<void>;
+    getAllTickets: () => Promise<void>;
     getTicketsByQueueId: (queueId: string) => Promise<void>
     getTicketsByPatientId: (patientId: string) => Promise<void>;
     assignStaffToTicket: (ticketId: string, staffId: string) => Promise<void>;

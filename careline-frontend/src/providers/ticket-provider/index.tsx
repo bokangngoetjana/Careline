@@ -65,6 +65,20 @@ export const TicketProvider = ({children} : {children: React.ReactNode}) => {
             dispatch(updateTicketStatusError());
         }
     };
+     const getAllTickets = async () => {
+    dispatch(getTicketsPending());
+    try {
+      const token = sessionStorage.getItem("token");
+      if (!token) throw new Error("User not authenticated");
+
+      const { data } = await instance.get("/services/app/Ticket/GetAll", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      dispatch(getTicketsSuccess(data.result?.items || []));
+    } catch {
+      dispatch(getTicketsError());
+    }
+  };
     const getTicketsByQueueId = async (queueId: string) => {
         dispatch(getTicketsPending());
 
@@ -164,7 +178,7 @@ export const TicketProvider = ({children} : {children: React.ReactNode}) => {
   
 return(
   <TicketStateContext.Provider value={state}>
-      <TicketActionContext.Provider value={{ createTicket, getMyTickets, getTicketsByPatientId, getTicketsByQueueId, assignStaffToTicket, updateTicketStatus, deleteTicket }}>
+      <TicketActionContext.Provider value={{ createTicket, getMyTickets, getTicketsByPatientId, getTicketsByQueueId, assignStaffToTicket, updateTicketStatus, deleteTicket, getAllTickets }}>
         {children}
       </TicketActionContext.Provider>
     </TicketStateContext.Provider>   
