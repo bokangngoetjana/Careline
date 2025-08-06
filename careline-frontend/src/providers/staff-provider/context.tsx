@@ -15,12 +15,18 @@ export interface IStaffStateContext {
   isError: boolean;
   profile?: IStaff | null;
   error?: string | null;
+  staffList?: IStaff[];
 }
 
 export interface IStaffActionContext {
   getProfile: () => Promise<void>;
   setProfile: (profile: IStaff | null) => void;
   resetProfile: () => void;
+
+  getStaff: () => Promise<void>
+  createStaff: (staff: any) => Promise<void>;
+  updateStaff: (staff: any) => Promise<void>;
+  deleteStaff: (id: string) => Promise<void>;
 }
 
 export const INITIAL_STATE: IStaffStateContext = {
@@ -29,6 +35,7 @@ export const INITIAL_STATE: IStaffStateContext = {
   isError: false,
   profile: null,
   error: null,
+  staffList: [],
 };
 
 export const StaffProfileStateContext = createContext<IStaffStateContext>(INITIAL_STATE);

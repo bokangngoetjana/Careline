@@ -75,6 +75,8 @@ export const AuthProvider = ({children} : { children: React.ReactNode}) => {
                 profileEndpoint = "/services/app/Patient/GetPatientProfile";
             else if (userRole === "Doctor" || userRole === "Nurse")
                 profileEndpoint = "/services/app/Staff/GetStaffProfile";
+            else if(userRole == "Admin")
+                profileEndpoint = "/services/app/User/Get?id=${userId}"
 
             if (profileEndpoint) {
                 try {
@@ -90,7 +92,8 @@ export const AuthProvider = ({children} : { children: React.ReactNode}) => {
                             sessionStorage.setItem("doctorId", profileData.id);
                         } else if (userRole === "Nurse") {
                             sessionStorage.setItem("nurseId", profileData.id);
-                        }
+                        } else if (userRole === "Admin")
+                            sessionStorage.setItem("adminId", profileData.id);
                     }
                     // Store name for UI greetings
                     if (profileData?.name && profileData?.surname) {
@@ -103,7 +106,9 @@ export const AuthProvider = ({children} : { children: React.ReactNode}) => {
             dispatch(loginUserSuccess(token));
 
             // Redirect based on role
-            if (userRole === "Patient") {
+            if (userRole === "Admin") {
+            router.push("/dashboard");
+            } else if (userRole === "Patient") {
                 router.push("/patient");
             } else if (userRole === "Doctor") {
                 router.push("/doctor");

@@ -19,6 +19,9 @@ export interface IVisitQueueStateContext {
 export interface IVisitQueueActionContext {
   getVisitQueues: () => Promise<void>;
   getActiveVisitQueue: () => Promise<void>;
+  createVisitQueue: (queue: IVisitQueue) => Promise<void>;
+  updateVisitQueue: (queue: IVisitQueue) => Promise<void>;
+  deleteVisitQueue: (id: string) => Promise<void>;
 }
 
 export const INITIAL_STATE: IVisitQueueStateContext = {

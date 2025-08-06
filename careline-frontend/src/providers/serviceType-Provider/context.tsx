@@ -14,6 +14,9 @@ export interface IServiceTypeStateContext {
 }
 export interface IServiceTypeActionContext {
   getServiceType: () => Promise<void>;
+  createServiceType: (serviceType: IServiceType) => Promise<void>;
+  updateServiceType: (serviceType: IServiceType) => Promise<void>;
+  deleteServiceType: (id: string) => Promise<void>;
 }
 export const INITIAL_STATE: IServiceTypeStateContext = {
   isPending: false,

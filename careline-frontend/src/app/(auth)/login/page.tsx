@@ -77,7 +77,7 @@ const LoginPage = () => {
 
         <div className={styles.footerText}>
           Dont have an account?{' '}
-          <Link href="/signup">
+          <Link href="/patient-signup">
             <strong>Signup</strong>
           </Link>
         </div>
