@@ -1,138 +1,197 @@
-'use client';
+"use client";
+import React, { useContext } from "react";
+import { Form, Input, Button, Card, Typography, Select, message } from "antd";
+import { UserAddOutlined, MailOutlined, LockOutlined, UserOutlined, IdcardOutlined } from "@ant-design/icons";
+import Link from "next/link";
+import { useAuthActions, useAuthState } from "@/providers/auth-provider";
 
-import React from 'react';
-import type { FormProps } from 'antd';
-import { Button, Form, Input, Typography, Select } from 'antd';
-import { UserOutlined, MailOutlined, LockOutlined, IdcardOutlined, ManOutlined, WomanOutlined } from '@ant-design/icons';
-import { useStyles } from './Style/style';
-import { useAuthActions, useAuthState } from '@/providers/auth-provider';
-import { IUser } from '@/providers/auth-provider/context';
-import Link from 'next/link';
-
+const { Title, Text } = Typography;
 const { Option } = Select;
 
-enum GenderEnum {
-    Male = 1,
-    Female,
-    Other
-}
+export default function PatientSignupPage() {
+  const [form] = Form.useForm();
+  const { isPending } = useAuthState();
+  const { registerPatient } = useAuthActions();
 
-const PatientSignUp: React.FC = () => {
-    const { styles } = useStyles();
-    const { registerPatient } = useAuthActions();
-    const { isError } = useAuthState();
-
-    if(isError)
-        return <div>Error registering patient</div>;
-
-    const onFinish: FormProps<IUser>['onFinish'] = (values) => {
-    const newUser: IUser = {
+  const onFinish = async (values: any) => {
+    const payload = {
+      id: "00000000-0000-0000-0000-000000000000",
       name: values.name,
       surname: values.surname,
+      identityNo: parseInt(values.identityNo),
       userName: values.userName,
       email: values.email,
       password: values.password,
-      identityNo: Number(values.identityNo), 
-      gender: values.gender,
-      roleName: 'Patient'
+      gender: parseInt(values.gender)
     };
 
-    registerPatient(newUser);
+    await registerPatient(payload);
   };
-  const onFinishFailed: FormProps<IUser>['onFinishFailed'] = (error) => {
-    console.log('Failed: ', error);
-  }
 
   return (
-    <div className={styles.container}>
-      <div className={`${styles.decorativeCircle} ${styles.circleTopLeft}`} />
-      <div className={`${styles.decorativeCircle} ${styles.circleBottomRight}`} />
-
-      <Form
-        name="patientSignup"
-        className={styles.formWrapper}
-        onFinish={onFinish}
-        onFinishFailed={onFinishFailed}
-        autoComplete="off"
+    <div style={{ 
+      minHeight: "100vh", 
+      display: "flex", 
+      alignItems: "center", 
+      justifyContent: "center",
+      background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)"
+    }}>
+      <Card
+        style={{
+          width: "100%",
+          maxWidth: 500,
+          margin: "0 16px",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          borderRadius: 12,
+        }}
       >
-        <Typography className={styles.brandName}>CareLine</Typography>
-        <Typography className={styles.title}>Patient Sign Up</Typography>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <Title level={2} style={{ color: "#292966", marginBottom: 8 }}>
+            Patient Registration
+          </Title>
+          <Text type="secondary">Join CareLine to manage your healthcare</Text>
+        </div>
 
-        <Form.Item<IUser>
-          name="name"
-          rules={[{ required: true, message: 'Please input your first name' }]}
-          className={styles.formItem}
+        <Form
+          form={form}
+          name="patient_registration"
+          onFinish={onFinish}
+          layout="vertical"
+          size="large"
+          disabled={isPending}
         >
-          <Input placeholder="First Name" className={styles.input} prefix={<UserOutlined />} />
-        </Form.Item>
+          <Form.Item
+            name="name"
+            label="First Name"
+            rules={[{ required: true, message: 'Please enter your first name' }]}
+          >
+            <Input 
+              prefix={<UserOutlined />} 
+              placeholder="Enter your first name"
+            />
+          </Form.Item>
 
-        <Form.Item<IUser>
-          name="surname"
-          rules={[{ required: true, message: 'Please input your surname' }]}
-          className={styles.formItem}
-        >
-          <Input placeholder="Surname" className={styles.input} prefix={<UserOutlined />} />
-        </Form.Item>
+          <Form.Item
+            name="surname"
+            label="Last Name"
+            rules={[{ required: true, message: 'Please enter your last name' }]}
+          >
+            <Input 
+              prefix={<UserOutlined />} 
+              placeholder="Enter your last name"
+            />
+          </Form.Item>
 
-        <Form.Item<IUser>
-          name="userName"
-          rules={[{ required: true, message: 'Please choose a username' }]}
-          className={styles.formItem}
-        >
-          <Input placeholder="Username" className={styles.input} prefix={<UserOutlined />} />
-        </Form.Item>
+          <Form.Item
+            name="userName"
+            label="Username"
+            rules={[{ required: true, message: 'Please enter a username' }]}
+          >
+            <Input 
+              prefix={<UserOutlined />} 
+              placeholder="Choose a username"
+            />
+          </Form.Item>
 
-        <Form.Item<IUser>
-          name="email"
-          rules={[{ required: true, type: 'email', message: 'Please enter a valid email' }]}
-          className={styles.formItem}
-        >
-          <Input placeholder="Email" className={styles.input} prefix={<MailOutlined />} />
-        </Form.Item>
+          <Form.Item
+            name="email"
+            label="Email Address"
+            rules={[
+              { required: true, message: 'Please enter your email address' },
+              { type: 'email', message: 'Please enter a valid email address' }
+            ]}
+          >
+            <Input 
+              prefix={<MailOutlined />} 
+              placeholder="Enter your email address"
+            />
+          </Form.Item>
 
-        <Form.Item<IUser>
-          name="password"
-          rules={[{ required: true, message: 'Please enter your password' }]}
-          className={styles.formItem}
-        >
-          <Input.Password placeholder="Password" className={styles.input} prefix={<LockOutlined />} />
-        </Form.Item>
+          <Form.Item
+            name="identityNo"
+            label="Identity Number"
+            rules={[{ required: true, message: 'Please enter your identity number' }]}
+          >
+            <Input 
+              prefix={<IdcardOutlined />} 
+              placeholder="Enter your identity number"
+            />
+          </Form.Item>
 
-        <Form.Item<IUser>
-          name="identityNo"
-          rules={[{ required: true, message: 'Please enter your ID number' }]}
-          className={styles.formItem}
-        >
-          <Input placeholder="Identity Number" className={styles.input} prefix={<IdcardOutlined />} />
-        </Form.Item>
+          <Form.Item
+            name="gender"
+            label="Gender"
+            rules={[{ required: true, message: 'Please select your gender' }]}
+          >
+            <Select placeholder="Select your gender">
+              <Option value={1}>Male</Option>
+              <Option value={2}>Female</Option>
+              <Option value={3}>Other</Option>
+            </Select>
+          </Form.Item>
 
-        <Form.Item<IUser>
-          name="gender"
-          rules={[{ required: true, message: 'Please select your gender' }]}
-          className={styles.formItem}
-        >
-          <Select placeholder="Select Gender" className={styles.input}>
-            <Option value={GenderEnum.Male}>
-              <ManOutlined /> Male
-            </Option>
-            <Option value={GenderEnum.Female}>
-              <WomanOutlined /> Female
-            </Option>
-            <Option value={GenderEnum.Other}>Other</Option>
-          </Select>
-        </Form.Item>
+          <Form.Item
+            name="password"
+            label="Password"
+            rules={[{ required: true, message: 'Please enter a password' }]}
+          >
+            <Input.Password 
+              prefix={<LockOutlined />} 
+              placeholder="Enter a strong password"
+            />
+          </Form.Item>
 
-        <Form.Item>
-          <Button type="primary" htmlType="submit" className={styles.submitButton}>
-            Sign Up
-          </Button>
-        </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            label="Confirm Password"
+            dependencies={['password']}
+            rules={[
+              { required: true, message: 'Please confirm your password' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Passwords do not match'));
+                },
+              }),
+            ]}
+          >
+            <Input.Password 
+              prefix={<LockOutlined />} 
+              placeholder="Confirm your password"
+            />
+          </Form.Item>
 
-        <Link href="/login">
-          <Typography className={styles.linkText}>Already have an account? Login</Typography>
-        </Link>
-      </Form>
+          <Form.Item style={{ marginTop: 32 }}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={isPending}
+              block
+              size="large"
+              icon={<UserAddOutlined />}
+              style={{
+                backgroundColor: "#292966",
+                borderColor: "#292966",
+                height: 48,
+                fontWeight: "600"
+              }}
+            >
+              {isPending ? "Creating Account..." : "Create Account"}
+            </Button>
+          </Form.Item>
+
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <Text type="secondary">
+              Already have an account?{" "}
+              <Link href="/login" style={{ color: "#292966", fontWeight: "500" }}>
+                Sign in here
+              </Link>
+            </Text>
+          </div>
+        </Form>
+      </Card>
     </div>
   );
 }
-export default PatientSignUp;

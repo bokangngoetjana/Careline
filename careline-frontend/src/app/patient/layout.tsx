@@ -7,9 +7,11 @@ import {
   ScheduleOutlined,
   SettingOutlined,
   LogoutOutlined,
+  UserOutlined, // Added for profile icon
 } from "@ant-design/icons";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import PatientProfileModal from "@/components/modal/ProfileModal"; // Import the modal
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -19,6 +21,7 @@ const menuItems = [
   { key: "3", icon: <ScheduleOutlined />, label: <Link href="/patient/queue">My Queue</Link> },
   { key: "4", icon: <SettingOutlined />, label: <Link href="/patient/settings">Settings</Link> },
   { key: "6", icon: <FormOutlined />, label: <Link href="/patient/medical-history">Medical History</Link> },
+  { key: "7", icon: <UserOutlined />, label: "My Profile" }, // Added profile menu item
   { key: "5", icon: <LogoutOutlined />, label: "Logout" },
 ];
 
@@ -26,11 +29,11 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-
   const router = useRouter();
   const [patientName, setPatientName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  
+  const [profileModalOpen, setProfileModalOpen] = useState(false); // Added state for profile modal
+ 
   useEffect(() => {
     const name = sessionStorage.getItem("userFullName");
     if(name)
@@ -40,6 +43,11 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
   const handleLogout = () => {
     sessionStorage.clear();
     router.push("/login");
+  };
+
+  // Added function to handle profile menu click
+  const handleProfileClick = () => {
+    setProfileModalOpen(true);
   };
 
   return (
@@ -64,11 +72,14 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
           theme="dark"
           mode="inline"
           defaultSelectedKeys={["1"]}
-          items={menuItems.map((item) =>
-            item.key === "5"
-              ? { ...item, onClick: handleLogout }
-              : item
-          )}
+          items={menuItems.map((item) => {
+            if (item.key === "5") {
+              return { ...item, onClick: handleLogout };
+            } else if (item.key === "7") { // Handle profile menu item
+              return { ...item, onClick: handleProfileClick };
+            }
+            return item;
+          })}
         />
       </Sider>
       <Layout>
@@ -99,6 +110,12 @@ export default function PatientLayout({ children }: { children: React.ReactNode 
           CareLine ©{new Date().getFullYear()}
         </Footer>
       </Layout>
+
+      {/* Added Profile Modal */}
+      <PatientProfileModal 
+        open={profileModalOpen} 
+        onClose={() => setProfileModalOpen(false)} 
+      />
     </Layout>
   );
 }

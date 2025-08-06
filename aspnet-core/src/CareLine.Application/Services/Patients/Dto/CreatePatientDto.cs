@@ -4,7 +4,7 @@ using CareLine.Domain.Enum;
 
 namespace CareLine.Services.Patients.Dto
 {
-    public class CreatePatientDto : EntityDto<Guid>
+    public class CreatePatientDto : EntityDto
     {
         public string Name { get; set; }
         public string Surname { get; set; }
