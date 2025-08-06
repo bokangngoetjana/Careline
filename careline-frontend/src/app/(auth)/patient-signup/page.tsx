@@ -15,7 +15,6 @@ export default function PatientSignupPage() {
 
   const onFinish = async (values: any) => {
     const payload = {
-      id: "00000000-0000-0000-0000-000000000000",
       name: values.name,
       surname: values.surname,
       identityNo: parseInt(values.identityNo),

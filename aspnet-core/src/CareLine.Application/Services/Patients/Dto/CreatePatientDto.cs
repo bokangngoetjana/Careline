@@ -1,5 +1,4 @@
-﻿using System;
-using Abp.Application.Services.Dto;
+﻿using Abp.Application.Services.Dto;
 using CareLine.Domain.Enum;
 
 namespace CareLine.Services.Patients.Dto

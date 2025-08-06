@@ -1,9 +1,12 @@
 ﻿using System;
 using Abp.Application.Services.Dto;
+using Abp.AutoMapper;
+using CareLine.Domain.ClinicStaff;
 using CareLine.Domain.Enum;
 
 namespace CareLine.Services.ClinicStaff.Dto
 {
+    [AutoMap(typeof(Staff))]
     public class CreateStaffDto : EntityDto<Guid>
     {
         public string Name { get; set; }

@@ -18,7 +18,7 @@ export default function PatientProfileModal({ open, onClose }: PatientProfileMod
     if (open && !profile) {
       getProfile();
     }
-  }, [open, getProfile]);
+  }, [open]);
 
   const handleRefresh = () => {
     getProfile();
