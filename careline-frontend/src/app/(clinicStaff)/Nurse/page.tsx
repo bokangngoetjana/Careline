@@ -10,10 +10,12 @@ import { AddMedicalHistoryModal } from '@/components/modal/AddMedicalHistoryModa
 
 const NurseDashboard: React.FC = () => {
   const { styles } = useStyles();
-  const { getActiveVisitQueue } = useVisitQueueActions();
+
+  // Use getVisitQueues to fetch all queues instead of getActiveVisitQueue
+  const { getVisitQueues } = useVisitQueueActions();
   const { visitQueues } = useVisitQueueState();
 
-  const { getTicketsByQueueId, assignStaffToTicket, updateTicketStatus } = useTicketActions();
+  const { getAllTickets, assignStaffToTicket, updateTicketStatus } = useTicketActions();
   const { tickets } = useTicketState();
 
   const { createMedicalHistory } = useMedicalHistoryActions();
@@ -30,17 +32,11 @@ const NurseDashboard: React.FC = () => {
     if (tickets) setLocalTickets(tickets);
   }, [tickets]);
 
-  // Get active queue on mount
+  // Fetch all queues and all tickets on mount
   useEffect(() => {
-    getActiveVisitQueue();
+    getVisitQueues();
+    getAllTickets();
   }, []);
-
-  // Get tickets for the active queue
-  useEffect(() => {
-    if (visitQueues && visitQueues.length > 0 && visitQueues[0].id) {
-      getTicketsByQueueId(visitQueues[0].id);
-    }
-  }, [visitQueues]);
 
   const handleAssign = async (ticketId: string) => {
     if (!staffId) return;
@@ -52,10 +48,7 @@ const NurseDashboard: React.FC = () => {
     );
 
     await assignStaffToTicket(ticketId, staffId);
-
-    if (visitQueues?.[0]?.id) {
-      await getTicketsByQueueId(visitQueues[0].id);
-    }
+    await getAllTickets();
   };
 
   const handleOpenModal = (ticketId: string) => {
@@ -73,14 +66,31 @@ const NurseDashboard: React.FC = () => {
     await updateTicketStatus(selectedTicketId, 3);
     setSaving(false);
     setModalOpen(false);
-    
-    // Refresh tickets after completion
-    if (visitQueues?.[0]?.id) {
-      await getTicketsByQueueId(visitQueues[0].id);
-    }
+    await getAllTickets();
   };
 
-  const columns = [
+  // Columns for queues table
+  const queueColumns = [
+    { title: 'Queue Name', dataIndex: 'name', key: 'name' },
+    { title: 'Start Time', dataIndex: 'startTime', key: 'startTime',
+      render: (time: string) => new Date(time).toLocaleString() },
+    { title: 'End Time', dataIndex: 'endTime', key: 'endTime',
+      render: (time: string) => new Date(time).toLocaleString() },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: number) => {
+        if (status === 1) return <Tag color="green">Open</Tag>;
+        if (status === 2) return <Tag color="orange">Paused</Tag>;
+        if (status === 3) return <Tag color="red">Closed</Tag>;
+        return <Tag color="default">Unknown</Tag>;
+      }
+    }
+  ];
+
+  // Columns for tickets table
+  const ticketColumns = [
     { title: 'Queue Name', dataIndex: 'queueName', key: 'queueName' },
     { title: 'Patient', dataIndex: 'patientName', key: 'patientName' },
     { title: 'Ticket No.', dataIndex: 'queueNumber', key: 'queueNumber' },
@@ -90,13 +100,10 @@ const NurseDashboard: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       render: (status: number) => {
-        const map: Record<number, { text: string; color: string }> = {
-          1: { text: 'Waiting', color: 'volcano' },
-          2: { text: 'In Progress', color: 'blue' },
-          3: { text: 'Completed', color: 'green' }
-        };
-        const { text, color } = map[status] || { text: 'Unknown', color: 'default' };
-        return <Tag color={color}>{text}</Tag>;
+        if (status === 1) return <Tag color="volcano">Waiting</Tag>;
+        if (status === 2) return <Tag color="blue">In Progress</Tag>;
+        if (status === 3) return <Tag color="green">Completed</Tag>;
+        return <Tag color="default">Unknown</Tag>;
       }
     },
     {
@@ -105,19 +112,11 @@ const NurseDashboard: React.FC = () => {
       render: (_: any, record: any) => (
         <Space>
           {record.status === 2 && record.staffId === staffId ? (
-            <>
-              <Button
-                type="default"
-                onClick={() => handleOpenModal(record.id)}
-              >
-                Add Medical History
-              </Button>
-            </>
+            <Button type="default" onClick={() => handleOpenModal(record.id)}>
+              Add Medical History
+            </Button>
           ) : record.status === 1 ? (
-            <Button
-              type="primary"
-              onClick={() => handleAssign(record.id)}
-            >
+            <Button type="primary" onClick={() => handleAssign(record.id)}>
               Assign to Me
             </Button>
           ) : (
@@ -128,40 +127,30 @@ const NurseDashboard: React.FC = () => {
     }
   ];
 
-  const tableData =
-    localTickets?.map(ticket => ({
-      key: ticket.id,
-      id: ticket.id,
-      queueId: ticket.queueId,
-      queueName: visitQueues?.find(q => q.id === ticket.queueId)?.name ?? '',
-      patientName: ticket.patientId ?? 'Unknown',
-      queueNumber: ticket.queueNumber,
-      symptoms: ticket.symptoms,
-      status: ticket.status,
-      staffId: ticket.staffId
-    })) || [];
+  // Map queues for table data
+  const queueTableData = visitQueues?.map(queue => ({
+    key: queue.id,
+    ...queue,
+  })) || [];
+
+  // Map tickets for table data, link queueName from queues
+  const ticketTableData = localTickets.map(ticket => ({
+    key: ticket.id,
+    ...ticket,
+    queueName: visitQueues?.find(q => q.id === ticket.queueId)?.name ?? 'Unknown',
+    patientName: ticket.patientId ?? 'Unknown',
+  }));
 
   return (
     <>
       <Typography.Title level={3}>Welcome Nurse</Typography.Title>
 
-      <Card title="Active Queue Details" className={styles.card} style={{ marginBottom: 24 }}>
-        {visitQueues && visitQueues.length > 0 ? (
-          <>
-            <p><strong>Name:</strong> {visitQueues[0].name}</p>
-            <p><strong>Start Time:</strong> {new Date(visitQueues[0].startTime).toLocaleString()}</p>
-            <p><strong>End Time:</strong> {new Date(visitQueues[0].endTime).toLocaleString()}</p>
-            <p><strong>Status:</strong> 
-              {visitQueues[0].status === 1 ? 'Open' : visitQueues[0].status === 2 ? 'Paused' : 'Closed'}
-            </p>
-          </>
-        ) : (
-          <p>No active queue found</p>
-        )}
+      <Card title="All Queues" className={styles.card} style={{ marginBottom: 24 }}>
+        <Table columns={queueColumns} dataSource={queueTableData} pagination={false} />
       </Card>
 
-      <Card title="Today's Patient Queue" className={styles.card}>
-        <Table columns={columns} dataSource={tableData} pagination={false} />
+      <Card title="All Tickets" className={styles.card}>
+        <Table columns={ticketColumns} dataSource={ticketTableData} pagination={{ pageSize: 10 }} />
       </Card>
 
       <AddMedicalHistoryModal

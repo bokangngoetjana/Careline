@@ -338,8 +338,9 @@ const AdminDashboard: React.FC = () => {
               </Form.Item>
               <Form.Item name="status" label="Status" rules={[{ required: true }]}>
                 <Select>
-                  <Option value={0}>Open</Option>
-                  <Option value={1}>Closed</Option>
+                  <Option value={1}>Open</Option>
+                  <Option value={2}>Paused</Option>
+                  <Option value={3}>Closed</Option>
                 </Select>
               </Form.Item>
             </>
