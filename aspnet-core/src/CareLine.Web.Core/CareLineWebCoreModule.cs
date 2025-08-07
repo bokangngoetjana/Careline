@@ -14,6 +14,8 @@ using CareLine.Configuration;
 using CareLine.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Abp.Timing;
+using Abp.Dependency;
+using CareLine.Services.Email;
 
 namespace CareLine
 {
@@ -66,6 +68,7 @@ namespace CareLine
         public override void Initialize()
         {
             IocManager.RegisterAssemblyByConvention(typeof(CareLineWebCoreModule).GetAssembly());
+            IocManager.Register<IEmailService, EmailService>(DependencyLifeStyle.Transient);
         }
 
         public override void PostInitialize()

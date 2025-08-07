@@ -1,12 +1,13 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Button, Table, Tag, Space } from 'antd';
+import { Card, Typography, Button, Table, Tag, Space, Select } from 'antd';
 import { useStyles } from '../Style/style';
 import { useVisitQueueActions, useVisitQueueState } from '@/providers/queue-provider';
 import { useTicketActions, useTicketState } from '@/providers/ticket-provider';
 import { ITicket } from '@/providers/ticket-provider/context';
 import { useMedicalHistoryActions } from '@/providers/medhistory-provider';
 import { AddMedicalHistoryModal } from '@/components/modal/AddMedicalHistoryModal';
+import next from 'next';
 
 const NurseDashboard: React.FC = () => {
   const { styles } = useStyles();
@@ -25,6 +26,8 @@ const NurseDashboard: React.FC = () => {
   const [localTickets, setLocalTickets] = useState<ITicket[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [selectedQueueId, setSelectedQueueId] = useState<string | null>(null);
+
   const [saving, setSaving] = useState(false);
 
   // Sync local tickets when provider tickets change
@@ -64,6 +67,16 @@ const NurseDashboard: React.FC = () => {
       ...values
     });
     await updateTicketStatus(selectedTicketId, 3);
+    const completedTicket = localTickets.find(t => t.id === selectedTicketId);
+    const queueId = completedTicket?.queueId;
+
+    const nextTicket = getNextTicketInQueue(queueId, localTickets);
+
+    if(nextTicket){
+      await assignStaffToTicket(nextTicket.id, staffId);
+      await updateTicketStatus(nextTicket.id, 2);
+    }
+
     setSaving(false);
     setModalOpen(false);
     await getAllTickets();
@@ -126,6 +139,12 @@ const NurseDashboard: React.FC = () => {
       )
     }
   ];
+const getNextTicketInQueue = (queueId: string, tickets: ITicket[]) => {
+  const queueTickets = tickets
+    .filter(t => t.queueId === queueId && t.status === 1) // Only waiting
+    .sort((a, b) => a.queueNumber - b.queueNumber); // Ordered by queue number
+  return queueTickets[0] || null;
+};
 
   // Map queues for table data
   const queueTableData = visitQueues?.map(queue => ({
@@ -134,7 +153,9 @@ const NurseDashboard: React.FC = () => {
   })) || [];
 
   // Map tickets for table data, link queueName from queues
-  const ticketTableData = localTickets.map(ticket => ({
+  const ticketTableData = localTickets
+  .filter(ticket => !selectedQueueId || ticket.queueId === selectedQueueId)
+  .map(ticket => ({
     key: ticket.id,
     ...ticket,
     queueName: visitQueues?.find(q => q.id === ticket.queueId)?.name ?? 'Unknown',
@@ -149,7 +170,29 @@ const NurseDashboard: React.FC = () => {
         <Table columns={queueColumns} dataSource={queueTableData} pagination={false} />
       </Card>
 
-      <Card title="All Tickets" className={styles.card}>
+      <Card
+  title={
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <span>All Tickets</span>
+      <Select
+        placeholder="Filter by Queue"
+        allowClear
+        style={{ width: 250 }}
+        onChange={(value) => setSelectedQueueId(value)}
+      >
+        <Select.Option value={null}>All Queues</Select.Option>
+        {visitQueues?.map(queue => (
+          
+          <Select.Option key={queue.id} value={queue.id}>
+            {queue.name}
+          </Select.Option>
+        ))}
+      </Select>
+    </div>
+  }
+  className={styles.card}
+>
+
         <Table columns={ticketColumns} dataSource={ticketTableData} pagination={{ pageSize: 10 }} />
       </Card>
 
