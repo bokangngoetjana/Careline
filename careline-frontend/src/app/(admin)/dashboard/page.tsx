@@ -23,7 +23,6 @@ const AdminDashboard: React.FC = () => {
   const [form] = Form.useForm();
 
   const { getStaff, createStaff, updateStaff, deleteStaff } = useStaffProfileActions();
-  const { staffList } = useStaffProfileState();
   const { tickets, isPending } = useTicketState();
   const { getAllTickets } = useTicketActions();
 
@@ -101,17 +100,16 @@ const AdminDashboard: React.FC = () => {
         const payload = {
             name: values.name?.trim(),
             surname: values.surname?.trim(),
-            identityNo: Number(values.identityNo), // int
+            identityNo: Number(values.identityNo),
             email: values.email?.trim(),
             employeeNo: values.employeeNo?.trim(),
-            roleName: values.roleName, // Doctor/Nurse
-            gender: Number(values.gender), // 1, 2, or 3 (matching your enum)
+            roleName: values.roleName, 
+            gender: Number(values.gender),
             userName: values.userName?.trim(),
-            password: values.password, // keep as is
+            password: values.password,
         };
-        console.log("Sending staff payload:", payload);
-
-  // Ensure all required fields are there
+getStaff();
+  
   const missingFields = Object.entries(payload)
     .filter(([_, v]) => v === undefined || v === null || v === "")
     .map(([k]) => k);
@@ -176,7 +174,18 @@ const AdminDashboard: React.FC = () => {
     { title: "Staff", dataIndex: "staffName" },
     { title: "Queue", dataIndex: "queueName" },
     { title: "Service Type", dataIndex: "serviceTypeName" },
-    { title: "Status", dataIndex: "status" },
+    { title: "Status", dataIndex: "status",  render: (status: number) => {
+    switch (status) {
+      case 1:
+        return "Waiting";
+      case 2:
+        return "Being Served";
+      case 3:
+        return "Completed";
+      default:
+        return "Unknown";
+    }
+  } },
     { title: "Check-in Time", dataIndex: "checkInTime" },
   ];
   const columns = {
@@ -215,7 +224,18 @@ const AdminDashboard: React.FC = () => {
       { title: 'Queue Name', dataIndex: 'name' },
       { title: 'Start Time', dataIndex: 'startTime' },
       { title: 'End Time', dataIndex: 'endTime' },
-      { title: 'Status', dataIndex: 'status' },
+      { title: 'Status', dataIndex: 'status', render: (status: number) => {
+    switch (status) {
+      case 1:
+        return 'Open';
+      case 2:
+        return 'Paused';
+      case 3:
+        return 'Closed';
+      default:
+        return 'Unknown';
+    }
+  } },
       {
         title: 'Actions',
         render: (_: any, record: any) => (
@@ -333,13 +353,28 @@ const AdminDashboard: React.FC = () => {
               <Form.Item name="startTime" label="Start Time" rules={[{ required: true }]}>
                 <Input type="datetime-local" />
               </Form.Item>
-              <Form.Item name="endTime" label="End Time" rules={[{ required: true }]}>
+              <Form.Item name="endTime" label="End Time" rules={[
+    { required: true, message: 'End Time is required' },
+    ({ getFieldValue }) => ({
+      validator(_, value) {
+        const startTime = getFieldValue('startTime');
+        if (!value || !startTime) {
+          return Promise.resolve();
+        }
+        // Compare ISO datetime strings or convert to Date objects
+        if (new Date(value) >= new Date(startTime)) {
+          return Promise.resolve();
+        }
+        return Promise.reject(new Error('End Time must be after Start Time'));
+      },
+    }),
+  ]}
+  >
                 <Input type="datetime-local" />
               </Form.Item>
               <Form.Item name="status" label="Status" rules={[{ required: true }]}>
                 <Select>
                   <Option value={1}>Open</Option>
-                  <Option value={2}>Paused</Option>
                   <Option value={3}>Closed</Option>
                 </Select>
               </Form.Item>

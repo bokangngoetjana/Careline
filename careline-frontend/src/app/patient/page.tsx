@@ -13,7 +13,8 @@ export default function PatientHomePage() {
   const { getMyTickets, deleteTicket } = useContext(TicketActionContext);
   const { tickets, isPending } = useContext(TicketStateContext);
   const { visitQueues } = useVisitQueueState(); // queues from provider
-
+  const [queueTickets, setQueueTickets] = useState<ITicket[]>([]);
+  const { getTicketsByQueueId } = useContext(TicketActionContext);
   const patientId = typeof window !== "undefined" ? sessionStorage.getItem("patientId") : null;
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -26,7 +27,7 @@ export default function PatientHomePage() {
     if (tickets && tickets.length > 0) {
       pollingRef.current = setInterval(() => {
         getMyTickets();
-      }, 120000); // 2 minutes
+      }, 50000); 
     }
 
     return () => {
@@ -43,7 +44,17 @@ export default function PatientHomePage() {
   const myQueueName = myActiveTicket
     ? visitQueues?.find((q) => q.id === myActiveTicket.queueId)?.name || "Unknown Queue"
     : null;
-
+useEffect(() => {
+  async function fetchQueueTickets() {
+    if (myActiveTicket?.queueId) {
+      await getTicketsByQueueId(myActiveTicket.queueId);
+      setQueueTickets(tickets.filter(t => t.queueId === myActiveTicket.queueId && t.id !== myActiveTicket.id));
+    } else {
+      setQueueTickets([]);
+    }
+  }
+  fetchQueueTickets();
+}, []);
   const handleCancelTicket = async (ticketId: string) => {
     const updatedTickets = tickets?.filter((t) => t.id !== ticketId);
 
@@ -51,6 +62,7 @@ export default function PatientHomePage() {
     message.success("Your ticket has been cancelled.");
     await getMyTickets();
   };
+  
 
   const columns = [
     {
@@ -140,7 +152,35 @@ export default function PatientHomePage() {
           <p>No active ticket. Please join a queue.</p>
         )}
       </Card>
-
+      {queueTickets.length > 0 && (
+  <Card title={`Other Tickets in Queue (${myQueueName})`} style={{ marginTop: 24 }}>
+    <Table
+      dataSource={queueTickets.map(t => ({ key: t.id, ...t }))}
+      columns={[
+        {
+          title: "Queue Number",
+          dataIndex: "queueNumber",
+          key: "queueNumber",
+        },
+        {
+          title: "Status",
+          dataIndex: "status",
+          key: "status",
+          render: (status: number) => {
+            switch (status) {
+              case 1: return <Tag color="volcano">Waiting</Tag>;
+              case 2: return <Tag color="blue">Being Served</Tag>;
+              case 3: return <Tag color="green">Completed</Tag>;
+              default: return <Tag>Unknown</Tag>;
+            }
+          },
+        },
+      ]}
+      pagination={false}
+      loading={isPending}
+    />
+  </Card>
+)}
       {/* Ticket Modal */}
       <TicketModal open={modalOpen} onClose={() => setModalOpen(false)} />
     </div>
