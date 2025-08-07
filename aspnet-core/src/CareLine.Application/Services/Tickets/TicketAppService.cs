@@ -10,6 +10,7 @@ using CareLine.Domain.Enum;
 using CareLine.Domain.Tickets;
 using CareLine.Services.Tickets.Dto;
 using Microsoft.EntityFrameworkCore;
+using CareLine.Services.Email;
 
 namespace CareLine.Services.Tickets
 {
@@ -17,7 +18,14 @@ namespace CareLine.Services.Tickets
     {
         private readonly TicketManager _ticketManager;
         private readonly IRepository<Ticket, Guid> _ticketRepository;
+        private readonly IEmailService _emailService;
 
+        public TicketAppService(IRepository<Ticket, Guid> repository, TicketManager ticketManager, IEmailService emailService) : base(repository)
+        {
+            _ticketManager = ticketManager;
+            _ticketRepository = repository;
+            _emailService = emailService;
+        }
         public async Task AssignStaffToTicketAsync(AssignmentDto input)
         {
             var ticket = await _ticketRepository
@@ -36,19 +44,36 @@ namespace CareLine.Services.Tickets
 
             await _ticketRepository.UpdateAsync(ticket);
         }
-        public TicketAppService(IRepository<Ticket, Guid> repository, TicketManager ticketManager) : base(repository)
-        {
-            _ticketManager = ticketManager;
-            _ticketRepository = repository;
-        }
         public override async Task<TicketDto> CreateAsync(CreateTicketDto input)
         {
             var ticket = await _ticketManager.CreateTicketAsync(input.PatientId, input.QueueId, input.ServiceTypeId, input.Symptoms);
+            await _emailService.SendConfirmationEmailAsync(ticket);
             return ObjectMapper.Map<TicketDto>(ticket);
         }
         public async Task<TicketDto> UpdateTicketStatus(UpdateTicketStatusDto input)
         {
             var ticket = await _ticketManager.UpdateTicketStatusAsync(input.Id, input.Status, input.StaffId);
+            // Check if this ticket is now the first in line (Waiting queue)
+            if (ticket.Status == TicketStatus.Waiting)
+            {
+                // Get the first ticket in this queue with status Waiting
+                var firstInQueue = await _ticketRepository
+                    .GetAll()
+                    .Where(t => t.QueueId == ticket.QueueId && t.Status == TicketStatus.Waiting)
+                    .OrderBy(t => t.QueueNumber)
+                    .FirstOrDefaultAsync();
+
+                if (firstInQueue != null && firstInQueue.Id == ticket.Id)
+                {
+                    await _emailService.SendNextInQueueEmailAsync(ticket);
+                }
+            }
+            // Or send completion email if just completed
+            if (ticket.Status == TicketStatus.Completed)
+            {
+                await _emailService.SendCompletionEmailAsync(ticket);
+            }
+
             return ObjectMapper.Map<TicketDto>(ticket);
         }
         public async Task<List<TicketDto>> GetTicketsByQueueId(Guid queueId)
