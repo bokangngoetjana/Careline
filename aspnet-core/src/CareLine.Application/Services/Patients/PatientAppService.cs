@@ -38,6 +38,7 @@ namespace CareLine.Services.Patients
                 Surname = patient.Surname,
                 UserName = patient.UserAccount.UserName,
                 IdentityNo = patient.IdentityNo,
+                Email = patient.Email
             };
         }
         public override async Task<PatientDto> CreateAsync(CreatePatientDto input)

@@ -88,6 +88,7 @@ export const AuthProvider = ({children} : { children: React.ReactNode}) => {
                     if (profileData?.id) {
                         if (userRole === "Patient") {
                             sessionStorage.setItem("patientId", profileData.id);
+                           
                         } else if (userRole === "Doctor") {
                             sessionStorage.setItem("doctorId", profileData.id);
                         } else if (userRole === "Nurse") {

@@ -54,7 +54,7 @@ namespace CareLine.Services.Email
         private async Task SendEmail(string toEmail, string subject, string body)
         {
             var client = new SendGridClient(_sendGridApiKey);
-            var from = new EmailAddress("no-reply@careline.app", "CareLine Queue System");
+            var from = new EmailAddress("bokang.ngoetjane@boxfusion.io", "CareLine Queue System");
             var to = new EmailAddress(toEmail);
             var msg = MailHelper.CreateSingleEmail(from, to, subject, body, null);
 
