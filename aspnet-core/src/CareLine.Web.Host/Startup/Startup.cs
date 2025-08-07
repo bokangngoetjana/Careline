@@ -17,6 +17,10 @@ using Abp.AspNetCore.SignalR.Hubs;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System.IO;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpsPolicy;
+using SendGrid;
+using CareLine.Services.Email;
 
 namespace CareLine.Web.Host.Startup
 {
@@ -47,7 +51,16 @@ namespace CareLine.Web.Host.Startup
             AuthConfigurer.Configure(services, _appConfiguration);
 
             services.AddSignalR();
+            DotNetEnv.Env.TraversePath().Load("./.env");
+            var key = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
+            services.AddSingleton<ISendGridClient>(new SendGridClient(key));
+            services.AddTransient<IEmailService, EmailService>();
 
+            services.Configure<HttpsRedirectionOptions>(options =>
+            {
+                options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+                options.HttpsPort = null;
+            });
             // Configure CORS for angular2 UI
             services.AddCors(
                 options => options.AddPolicy(

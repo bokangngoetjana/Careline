@@ -47,7 +47,14 @@ namespace CareLine.Services.Tickets
         public override async Task<TicketDto> CreateAsync(CreateTicketDto input)
         {
             var ticket = await _ticketManager.CreateTicketAsync(input.PatientId, input.QueueId, input.ServiceTypeId, input.Symptoms);
-            await _emailService.SendConfirmationEmailAsync(ticket);
+            try
+            {
+                await _emailService.SendConfirmationEmailAsync(ticket);
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn($"Failed to send confirmation email: {ex.Message}");
+            }
             return ObjectMapper.Map<TicketDto>(ticket);
         }
         public async Task<TicketDto> UpdateTicketStatus(UpdateTicketStatusDto input)
@@ -65,15 +72,27 @@ namespace CareLine.Services.Tickets
 
                 if (firstInQueue != null && firstInQueue.Id == ticket.Id)
                 {
-                    await _emailService.SendNextInQueueEmailAsync(ticket);
+                    try
+                    {
+                        await _emailService.SendNextInQueueEmailAsync(ticket);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Warn($"Failed to send next in queue email: {ex.Message}");
+                    }
                 }
             }
-            // Or send completion email if just completed
             if (ticket.Status == TicketStatus.Completed)
             {
-                await _emailService.SendCompletionEmailAsync(ticket);
+                try
+                {
+                    await _emailService.SendCompletionEmailAsync(ticket);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn($"Failed to send completion email: {ex.Message}");
+                }
             }
-
             return ObjectMapper.Map<TicketDto>(ticket);
         }
         public async Task<List<TicketDto>> GetTicketsByQueueId(Guid queueId)

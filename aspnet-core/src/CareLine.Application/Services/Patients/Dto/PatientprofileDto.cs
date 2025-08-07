@@ -9,5 +9,6 @@ namespace CareLine.Services.Patients.Dto
         public string Surname { get; set; }
         public int IdentityNo { get; set; }
         public string UserName { get; set; }
+        public string Email { get; set; }
     }
 }

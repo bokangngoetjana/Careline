@@ -55,9 +55,7 @@ export const TicketProvider = ({children} : {children: React.ReactNode}) => {
             staffId: staffId || sessionStorage.getItem("nurseId")
             };
 
-            await instance.put(endpoint, payload, {
-            headers: { Authorization: `Bearer ${token}` },
-            });
+            await instance.put(endpoint, payload)
 
             dispatch(updateTicketStatusSuccess({ ticketId, status }));
         } catch (error) {
