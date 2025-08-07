@@ -23,12 +23,12 @@ namespace CareLine.Services.Tickets
             var ticket = await _ticketRepository
                 .FirstOrDefaultAsync(t => t.Id == input.TicketId);
 
-            if(ticket == null)
+            if (ticket == null)
             {
                 throw new UserFriendlyException("Ticket not found");
             }
 
-            if(ticket.Status != TicketStatus.Waiting)
+            if (ticket.Status != TicketStatus.Waiting)
                 throw new UserFriendlyException("Ticket is not in a Waiting state");
 
             ticket.StaffId = input.StaffId;
@@ -70,6 +70,41 @@ namespace CareLine.Services.Tickets
                 .ToListAsync();
 
             return ObjectMapper.Map<List<TicketDto>>(tickets);
+        }
+        public override async Task<PagedResultDto<TicketDto>> GetAllAsync(PagedAndSortedResultRequestDto input)
+        {
+            var query = _ticketRepository.GetAllIncluding(
+                t => t.Patient,
+                t => t.Staff,
+                t => t.Queue,
+                t => t.ServiceType);
+
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .OrderBy(t => t.QueueNumber)
+                .Skip(input.SkipCount)
+                .Take(input.MaxResultCount)
+                .ToListAsync();
+
+            var result = items.Select(t => new TicketDto
+            {
+                Id = t.Id,
+                PatientId = t.PatientId,
+                StaffId = t.StaffId,
+                QueueId = t.QueueId,
+                ServiceTypeId = t.ServiceTypeId,
+                Symptoms = t.Symptoms,
+                QueueNumber = t.QueueNumber,
+                Status = t.Status,
+                CheckInTime = t.CheckInTime,
+
+                PatientName = t.Patient != null ? $"{t.Patient.Name} {t.Patient.Surname}" : null,
+                StaffName = t.Staff != null ? $"{t.Staff.Name} {t.Staff.Surname}" : null,
+                QueueName = t.Queue?.Name,
+                ServiceTypeName = t.ServiceType?.Name
+            }).ToList();
+
+            return new PagedResultDto<TicketDto>(totalCount, result);
         }
     }
 }

@@ -172,11 +172,10 @@ const AdminDashboard: React.FC = () => {
   };
   const ticketColumns = [
     { title: "Ticket #", dataIndex: "queueNumber" },
-    { title: "Patient ID", dataIndex: "patientId" },
-    { title: "Staff ID", dataIndex: "staffId" },
-    { title: "Queue ID", dataIndex: "queueId" },
-    { title: "Service Type ID", dataIndex: "serviceTypeId" },
-    { title: "Symptoms", dataIndex: "symptoms" },
+    { title: "Patient", dataIndex: "patientName" },
+    { title: "Staff", dataIndex: "staffName" },
+    { title: "Queue", dataIndex: "queueName" },
+    { title: "Service Type", dataIndex: "serviceTypeName" },
     { title: "Status", dataIndex: "status" },
     { title: "Check-in Time", dataIndex: "checkInTime" },
   ];

@@ -17,5 +17,9 @@ namespace CareLine.Services.Tickets.Dto
         public int QueueNumber { get; set; }
         public TicketStatus Status { get; set; }
         public DateTime CheckInTime { get; set; }
+        public string PatientName { get; set; }
+        public string StaffName { get; set; }
+        public string QueueName { get; set; }
+        public string ServiceTypeName { get; set; }
     }
 }

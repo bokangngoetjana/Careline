@@ -9,7 +9,11 @@ export interface ITicket {
   symptoms?: string;
   queueNumber?: number;
   status?: number;
-  checkInTime?: string;   
+  checkInTime?: string;
+  patientName?: string;
+  staffName?: string;
+  queueName?: string;
+  serviceTypeName?: string;
 }
 export interface ICreateTicket{
     patientId: string;
