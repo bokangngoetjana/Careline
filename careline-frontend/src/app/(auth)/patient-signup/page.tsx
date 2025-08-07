@@ -1,9 +1,10 @@
 "use client";
-import React, { useContext } from "react";
-import { Form, Input, Button, Card, Typography, Select, message } from "antd";
+import React from "react";
+import { Form, Input, Button, Card, Typography, Select } from "antd";
 import { UserAddOutlined, MailOutlined, LockOutlined, UserOutlined, IdcardOutlined } from "@ant-design/icons";
 import Link from "next/link";
 import { useAuthActions, useAuthState } from "@/providers/auth-provider";
+import { IUser } from "@/providers/auth-provider/context";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -13,15 +14,15 @@ export default function PatientSignupPage() {
   const { isPending } = useAuthState();
   const { registerPatient } = useAuthActions();
 
-  const onFinish = async (values: any) => {
+  const onFinish = async (values: IUser) => {
     const payload = {
       name: values.name,
       surname: values.surname,
-      identityNo: parseInt(values.identityNo),
+      identityNo: Number(values.identityNo),
       userName: values.userName,
       email: values.email,
       password: values.password,
-      gender: parseInt(values.gender)
+      gender: Number(values.gender)
     };
 
     await registerPatient(payload);
@@ -33,7 +34,7 @@ export default function PatientSignupPage() {
       display: "flex", 
       alignItems: "center", 
       justifyContent: "center",
-      background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)"
+      background: "linear-gradient(135deg, #090979 0%, #00D4FF 100%)"
     }}>
       <Card
         style={{

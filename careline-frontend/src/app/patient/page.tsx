@@ -78,7 +78,7 @@ export default function PatientHomePage() {
     {
       title: "Action",
       key: "action",
-      render: (_: any, record: ITicket) =>
+      render: (_: unknown, record: ITicket) =>
         record.patientId === patientId && record.status === 1 ? (
           <Popconfirm
             title="Cancel Ticket"

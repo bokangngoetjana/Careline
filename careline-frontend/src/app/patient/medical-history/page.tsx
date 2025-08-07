@@ -4,6 +4,7 @@ import React, { useEffect, useState, useContext } from "react";
 import { Table, Modal, Typography, Tag, Spin } from "antd";
 import { TicketActionContext, TicketStateContext, ITicket } from "@/providers/ticket-provider/context";
 import { useMedicalHistoryActions, useMedicalHistoryState } from "@/providers/medhistory-provider";
+import { IMedicalHistory } from "@/providers/medhistory-provider/context";
 
 const { Title } = Typography;
 
@@ -16,7 +17,7 @@ export default function MedicalHistoryPage() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<ITicket | null>(null);
-  const [selectedHistory, setSelectedHistory] = useState<any>(null);
+  const [selectedHistory, setSelectedHistory] = useState<IMedicalHistory | null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   const patientId =
@@ -68,7 +69,7 @@ export default function MedicalHistoryPage() {
     {
       title: "Action",
       key: "action",
-      render: (_: any, record: ITicket) => (
+      render: (_: unknown, record: ITicket) => (
         <a onClick={() => handleViewHistory(record)}>View Medical History</a>
       ),
     },

@@ -36,8 +36,9 @@ export const StaffProvider = ({ children }: { children: React.ReactNode }) => {
       dispatch(getProfilePending());
       const { data } = await instance.get("/services/app/Staff/GetStaffProfile");
       dispatch(getProfileSuccess(data.result));
-    } catch (error: any) {
-      dispatch(getProfileError(error?.message || "Failed to load staff profile"));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to load staff profile";
+      dispatch(getProfileError(errorMessage));
     }
   };
 
@@ -70,11 +71,12 @@ export const StaffProvider = ({ children }: { children: React.ReactNode }) => {
       dispatch(getStaffSuccess(data.result.items || []));
     } catch (error) {
       dispatch(getStaffError());
+      console.log(error);
     }
   };
 
   // CREATE STAFF
-  const createStaff = async (staff: any) => {
+  const createStaff = async (staff: IStaff) => {
     dispatch(createStaffPending());
     try {
       const token = sessionStorage.getItem("token");
@@ -92,7 +94,7 @@ export const StaffProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // UPDATE
-  const updateStaff = async (staff: any) => {
+  const updateStaff = async (staff: IStaff) => {
     dispatch(updateStaffPending());
     try {
       const token = sessionStorage.getItem("token");
@@ -106,6 +108,7 @@ export const StaffProvider = ({ children }: { children: React.ReactNode }) => {
       await getStaff(); // refresh
     } catch (error) {
       dispatch(updateStaffError());
+      console.log(error);
     }
   };
 
@@ -124,6 +127,7 @@ export const StaffProvider = ({ children }: { children: React.ReactNode }) => {
       await getStaff(); // refresh
     } catch (error) {
       dispatch(deleteStaffError());
+      console.log(error);
     }
   };
   return (

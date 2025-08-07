@@ -9,7 +9,7 @@ export const useStyles = createStyles(({ token, css }) => {
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: linear-gradient(135deg, #f8faff, #eef1f6);
+      background: linear-gradient(135deg, #00D4FF, #090979);
       position: relative;
       overflow: hidden;
     `,

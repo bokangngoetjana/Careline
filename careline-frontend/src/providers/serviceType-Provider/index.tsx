@@ -1,5 +1,5 @@
 "use client";
-import { useContext, useReducer } from "react";
+import { useReducer } from "react";
 import { axiosInstance } from "@/utils/axiosInstance";
 import { INITIAL_STATE, IServiceType, ServiceTypeActionContext, ServiceTypeStateContext } from "./context";
 import { ServiceTypeReducer } from "./reducer";
@@ -35,7 +35,7 @@ export const ServiceTypeProvider = ({children} : {children: React.ReactNode}) =>
                 headers: {Authorization: `Bearer ${token}`},
             });
             dispatch(getServiceTypeSuccess(data.result.items));
-        } catch (error: any){
+        } catch (error: unknown){
             dispatch(getServiceTypeError());
             console.log(error);
         }

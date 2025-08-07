@@ -34,7 +34,7 @@ const DoctorDashboard: React.FC = () => {
       dataIndex: 'status',
       key: 'status',
       render: (status: string) => {
-        let color = status === 'Completed' ? 'green' : status === 'In Progress' ? 'blue' : 'volcano';
+        const color = status === 'Completed' ? 'green' : status === 'In Progress' ? 'blue' : 'volcano';
         return <Tag color={color}>{status}</Tag>;
       },
     },

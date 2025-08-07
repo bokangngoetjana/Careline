@@ -21,17 +21,19 @@ export const PatientProvider = ({children} : {children: React.ReactNode}) => {
             dispatch(getProfilePending());
             const { data } = await instance.get("/services/app/Patient/GetPatientProfile");
             dispatch(getProfileSuccess(data.result));
-        }catch(error: any){
-            dispatch(getProfileError(error?.message));
-        }
+        }catch (error: unknown) { // Changed from any to unknown
+      const errorMessage = error instanceof Error ? error.message : "Failed to load staff profile";
+      dispatch(getProfileError(errorMessage));
+    }
     }
     const updateProfile = async (data: Partial<IPatient>) => {
     try {
       dispatch(updateProfilePending());
       const { data: updated } = await axiosInstance.put("/services/app/Patient/UpdatePatientProfile", data);
       dispatch(updateProfileSuccess(updated.result));
-    } catch (error: any) {
-      dispatch(updateProfileError(error?.message || "Failed to update patient profile"));
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to update patient profile";
+      dispatch(updateProfileError(errorMessage));
     }
   };
   const setProfile = (profile: IPatient | null) => {

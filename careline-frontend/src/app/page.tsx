@@ -47,7 +47,8 @@ export default function Home() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
+    <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #00D4FF 0%, #090979 100%)" }}>
+
       {/* Navigation */}
       <nav style={{ 
         padding: "16px 32px", 

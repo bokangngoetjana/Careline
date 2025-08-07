@@ -24,8 +24,8 @@ export interface IStaffActionContext {
   resetProfile: () => void;
 
   getStaff: () => Promise<void>
-  createStaff: (staff: any) => Promise<void>;
-  updateStaff: (staff: any) => Promise<void>;
+  createStaff: (staff: IStaff) => Promise<void>;
+  updateStaff: (staff: IStaff) => Promise<void>;
   deleteStaff: (id: string) => Promise<void>;
 }
 

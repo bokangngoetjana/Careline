@@ -1,11 +1,12 @@
 "use client";
 import React from "react";
 import { Modal, Form, Input, InputNumber } from "antd";
+import { IMedicalHistory } from "@/providers/medhistory-provider/context";
 
 interface AddMedicalHistoryModalProps {
   open: boolean;
   onCancel: () => void;
-  onSave: (values: any) => void;
+  onSave: (values: IMedicalHistory) => void;
   loading?: boolean;
 }
 
