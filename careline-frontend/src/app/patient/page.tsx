@@ -121,16 +121,20 @@ useEffect(() => {
       </Title>
 
       {/* Check-In Card */}
-      <Card style={{ marginBottom: 24 }}>
-        <Title level={4}>Check-In</Title>
+      <Card style={{ marginBottom: 24, padding: '24px',
+        borderRadius: 12,
+        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+        backgroundColor: '#f0f5ff', // light blue-ish background for warmth
+        textAlign: 'center', }}>
+        <Title level={4} style={{ color: "#292966" }}>Check-In</Title>
         <p>Click the button below to join the queue and receive your ticket.</p>
         <Button
           type="primary"
           icon={<UserAddOutlined />}
           size="large"
-          style={{ backgroundColor: "#292966", borderColor: "#292966" }}
+          style={{ backgroundColor: "#292966", borderColor: "#292966", color: "#ffffff", }}
           onClick={() => setModalOpen(true)}
-          disabled={!!myActiveTicket} // disable if already in queue
+          disabled={!!myActiveTicket} 
         >
           {myActiveTicket ? "Already in Queue" : "Join Queue"}
         </Button>

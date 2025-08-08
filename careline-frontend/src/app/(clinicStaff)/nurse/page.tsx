@@ -158,7 +158,7 @@ const getNextTicketInQueue = (queueId: string, tickets: ITicket[]) => {
     key: ticket.id,
     ...ticket,
     queueName: visitQueues?.find(q => q.id === ticket.queueId)?.name ?? 'Unknown',
-    patientName: ticket.patientId ?? 'Unknown',
+    patientName: ticket.patientName ?? 'Unknown',
   }));
 
   return (
