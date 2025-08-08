@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Button, Table, Space, Modal, Form, Input, Select, Popconfirm, message, Spin } from 'antd';
+import { Card, Typography, Button, Table,Tag, Space, Modal, Form, Input, Select, Popconfirm, message, Spin } from 'antd';
 import { useStyles } from '../Style/style';
 import { axiosInstance } from '@/utils/axiosInstance';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -177,11 +177,11 @@ getStaff();
     { title: "Status", dataIndex: "status",  render: (status: number) => {
     switch (status) {
       case 1:
-        return "Waiting";
+        return <Tag color="volcano">Waiting</Tag>;
       case 2:
-        return "Being Served";
+        return <Tag color="blue">Being Served</Tag>;
       case 3:
-        return "Completed";
+        return <Tag color="green">Completed</Tag>;
       default:
         return "Unknown";
     }
@@ -227,11 +227,11 @@ getStaff();
       { title: 'Status', dataIndex: 'status', render: (status: number) => {
     switch (status) {
       case 1:
-        return 'Open';
+        return <Tag color="green">Open</Tag>;
       case 2:
         return 'Paused';
       case 3:
-        return 'Closed';
+        return  <Tag color="red">Closed</Tag>;
       default:
         return 'Unknown';
     }
