@@ -10,6 +10,7 @@ import {
 } from '@ant-design/icons';
 import { useRouter } from 'next/navigation';
 import { useStyles } from './Style/style';
+import Link from "next/link";
 
 const { Sider, Content } = Layout;
 
@@ -39,7 +40,7 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             { key: 'dashboard', icon: <AppstoreOutlined />, label: 'Dashboard' },
             { key: 'service-types', icon: <ProfileOutlined />, label: 'Service Types' },
             { key: 'staff', icon: <TeamOutlined />, label: 'Staff Management' },
-            { key: 'queues', icon: <ProfileOutlined />, label: 'Visit Queues' },
+            { key: 'queues', icon: <ProfileOutlined />, label: <Link href="/admin/queues">Visit Queues</Link> },
             { key: 'logout', icon: <LogoutOutlined />, label: 'Logout' },
           ]}
         />

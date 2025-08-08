@@ -5,6 +5,7 @@ import { Table, Modal, Typography, Tag, Spin } from "antd";
 import { TicketActionContext, TicketStateContext, ITicket } from "@/providers/ticket-provider/context";
 import { useMedicalHistoryActions, useMedicalHistoryState } from "@/providers/medhistory-provider";
 import { IMedicalHistory } from "@/providers/medhistory-provider/context";
+import { useStyles } from "../Style/style";
 
 const { Title } = Typography;
 
@@ -19,6 +20,8 @@ export default function MedicalHistoryPage() {
   const [selectedTicket, setSelectedTicket] = useState<ITicket | null>(null);
   const [selectedHistory, setSelectedHistory] = useState<IMedicalHistory | null>(null);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  
+  const { styles } = useStyles();
 
   const patientId =
     typeof window !== "undefined" ? sessionStorage.getItem("patientId") : null;
@@ -61,7 +64,7 @@ export default function MedicalHistoryPage() {
       dataIndex: "status",
       key: "status",
       render: (status: number) => (
-        <Tag color={status === 3 ? "green" : "default"}>
+        <Tag className={styles.completedTag} color={status === 3 ? "green" : "default"}>
           {status === 3 ? "Completed" : "Unknown"}
         </Tag>
       ),
@@ -70,18 +73,19 @@ export default function MedicalHistoryPage() {
       title: "Action",
       key: "action",
       render: (_: unknown, record: ITicket) => (
-        <a onClick={() => handleViewHistory(record)}>View Medical History</a>
+        <a className={styles.viewHistoryLink} onClick={() => handleViewHistory(record)}>View Medical History</a>
       ),
     },
   ];
 
   return (
-    <div>
-      <Title level={3} style={{ color: "#292966" }}>
+    <div className={styles.tableContainer}>
+      <Title level={3} className={styles.medicalHistoryTitle}>
         My Medical History
       </Title>
 
       <Table
+        className={styles.medicalHistoryTable}
         dataSource={completedTickets.map((t) => ({ ...t, key: t.id }))}
         columns={columns}
         loading={isPending}
@@ -90,6 +94,7 @@ export default function MedicalHistoryPage() {
 
       {/* Medical History Modal */}
       <Modal
+        className={styles.medicalHistoryModal}
         title={`Medical History - Ticket #${selectedTicket?.queueNumber || ""}`}
         open={modalOpen}
         onCancel={() => setModalOpen(false)}
@@ -97,7 +102,10 @@ export default function MedicalHistoryPage() {
         width={600}
       >
         {loadingHistory ? (
-          <Spin />
+          <div className={styles.profileLoadingContainer}>
+            <Spin size="large" />
+            <p>Loading medical history...</p>
+          </div>
         ) : selectedHistory ? (
           <div>
             <p>
@@ -125,7 +133,7 @@ export default function MedicalHistoryPage() {
             </p>
           </div>
         ) : (
-          <p>No medical history found for this ticket.</p>
+          <p className={styles.noHistoryMessage}>No medical history found for this ticket.</p>
         )}
       </Modal>
     </div>

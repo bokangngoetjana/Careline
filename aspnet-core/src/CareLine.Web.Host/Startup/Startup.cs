@@ -46,15 +46,35 @@ namespace CareLine.Web.Host.Startup
             {
                 options.Filters.Add(new AbpAutoValidateAntiforgeryTokenAttribute());
             });
-
+            services.Configure<SendGridOptions>(_appConfiguration.GetSection("SendGrid"));
             IdentityRegistrar.Register(services);
             AuthConfigurer.Configure(services, _appConfiguration);
 
             services.AddSignalR();
             DotNetEnv.Env.TraversePath().Load("./.env");
             var key = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
-            services.AddSingleton<ISendGridClient>(new SendGridClient(key));
-            services.AddTransient<IEmailService, EmailService>();
+            if (string.IsNullOrEmpty(key))
+            {
+                // Log the error but don't crash the application
+                var logger = services.BuildServiceProvider().GetRequiredService<ILogger<Startup>>();
+                logger.LogError("SendGrid API Key not found in environment variables");
+
+                // For development, you might want to throw an exception
+                if (_hostingEnvironment.IsDevelopment())
+                {
+                    throw new InvalidOperationException("SENDGRID_API_KEY environment variable is required");
+                }
+            }
+            else
+            {
+                // Register SendGrid client with the API key
+                services.AddSingleton<ISendGridClient>(new SendGridClient(key));
+                services.AddTransient<IEmailService, EmailService>();
+
+                var logger = services.BuildServiceProvider().GetRequiredService<ILogger<Startup>>();
+                logger.LogInformation("SendGrid configured successfully");
+            }
+
 
             services.Configure<HttpsRedirectionOptions>(options =>
             {

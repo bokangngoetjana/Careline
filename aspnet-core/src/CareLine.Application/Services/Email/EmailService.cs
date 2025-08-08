@@ -5,61 +5,121 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SendGrid.Helpers.Mail;
 using SendGrid;
+using Microsoft.Extensions.Options;
 
 namespace CareLine.Services.Email
 {
+    public class SendGridOptions
+    {
+        public string FromEmail { get; set; }
+        public string FromName { get; set; }
+    }
+
     public class EmailService : IEmailService
     {
-        private readonly string _sendGridApiKey;
+        private readonly ISendGridClient _sendGridClient;
         private readonly ILogger<EmailService> _logger;
+        private readonly SendGridOptions _sendGridOptions;
 
-        public EmailService(IConfiguration configuration, ILogger<EmailService> logger)
+        public EmailService(
+            ISendGridClient sendGridClient,
+            ILogger<EmailService> logger,
+            IOptions<SendGridOptions> sendGridOptions)
         {
-            _sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY");
+            _sendGridClient = sendGridClient;
             _logger = logger;
-
-            if (string.IsNullOrEmpty(_sendGridApiKey))
-                throw new Exception("SendGrid API key not found in environment variables.");
+            _sendGridOptions = sendGridOptions.Value;
         }
+
         public async Task SendConfirmationEmailAsync(Ticket ticket)
         {
-            var subject = $"Ticket Confirmation - #{ticket.QueueNumber}";
-            var body = $"Hi {ticket.Patient.Name},\n\n" +
-                       $"You have successfully checked in. Your ticket number is {ticket.QueueNumber}.\n" +
-                       $"Service: {ticket.ServiceType?.Name}\n" +
-                       $"Symptoms: {ticket.Symptoms}\n" +
-                       $"Queue: {ticket.Queue?.Name}\n\n" +
-                       "We will notify you when it’s your turn.";
+            try
+            {
+                var subject = $"Ticket Confirmation - #{ticket.QueueNumber}";
+                var body = $"Hi {ticket.Patient.Name},\n\n" +
+                           $"You have successfully checked in. Your ticket number is {ticket.QueueNumber}.\n" +
+                           $"Service: {ticket.ServiceType?.Name}\n" +
+                           $"Symptoms: {ticket.Symptoms}\n" +
+                           $"Queue: {ticket.Queue?.Name}\n\n" +
+                           "We will notify you when it's your turn.";
 
-            await SendEmail(ticket.Patient.Email, subject, body);
+                await SendEmail(ticket.Patient.Email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send confirmation email for ticket {TicketId}", ticket.Id);
+                throw; // Re-throw to let the caller handle it
+            }
         }
+
         public async Task SendNextInQueueEmailAsync(Ticket ticket)
         {
-            var subject = $"You're Next - Ticket #{ticket.QueueNumber}";
-            var body = $"Hi {ticket.Patient.Name},\n\n" +
-                       "You are next in the queue. Please be ready.\n" +
-                       $"Queue: {ticket.Queue?.Name}\n" +
-                       $"Service: {ticket.ServiceType?.Name}";
+            try
+            {
+                var subject = $"You're Next - Ticket #{ticket.QueueNumber}";
+                var body = $"Hi {ticket.Patient.Name},\n\n" +
+                           "You are next in the queue. Please be ready.\n" +
+                           $"Queue: {ticket.Queue?.Name}\n" +
+                           $"Service: {ticket.ServiceType?.Name}";
 
-            await SendEmail(ticket.Patient.Email, subject, body);
+                await SendEmail(ticket.Patient.Email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send next-in-queue email for ticket {TicketId}", ticket.Id);
+                throw;
+            }
         }
+
         public async Task SendCompletionEmailAsync(Ticket ticket)
         {
-            var subject = $"Ticket #{ticket.QueueNumber} - Completed";
-            var body = $"Hi {ticket.Patient.Name},\n\n" +
-                       "Your consultation is complete. Thank you for visiting CareLine.";
+            try
+            {
+                var subject = $"Ticket #{ticket.QueueNumber} - Completed";
+                var body = $"Hi {ticket.Patient.Name},\n\n" +
+                           "Your consultation is complete. Thank you for visiting CareLine.";
 
-            await SendEmail(ticket.Patient.Email, subject, body);
+                await SendEmail(ticket.Patient.Email, subject, body);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send completion email for ticket {TicketId}", ticket.Id);
+                throw;
+            }
         }
+
         private async Task SendEmail(string toEmail, string subject, string body)
         {
-            var client = new SendGridClient(_sendGridApiKey);
-            var from = new EmailAddress("bokang.ngoetjane@boxfusion.io", "CareLine Queue System");
-            var to = new EmailAddress(toEmail);
-            var msg = MailHelper.CreateSingleEmail(from, to, subject, body, null);
+            if (string.IsNullOrEmpty(toEmail))
+            {
+                _logger.LogWarning("Cannot send email: recipient email is null or empty");
+                return;
+            }
 
-            var response = await client.SendEmailAsync(msg);
-            _logger.LogInformation($"Email to {toEmail}: {response.StatusCode}");
+            try
+            {
+                var from = new EmailAddress(_sendGridOptions.FromEmail, _sendGridOptions.FromName);
+                var to = new EmailAddress(toEmail);
+                var msg = MailHelper.CreateSingleEmail(from, to, subject, body, null);
+
+                _logger.LogInformation("Attempting to send email to {ToEmail} with subject '{Subject}'", toEmail, subject);
+
+                var response = await _sendGridClient.SendEmailAsync(msg);
+
+                _logger.LogInformation("Email sent to {ToEmail}. SendGrid response: {StatusCode}", toEmail, response.StatusCode);
+
+                if (response.StatusCode != System.Net.HttpStatusCode.Accepted)
+                {
+                    var responseBody = await response.Body.ReadAsStringAsync();
+                    _logger.LogWarning("SendGrid returned non-success status {StatusCode}: {ResponseBody}",
+                        response.StatusCode, responseBody);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send email to {ToEmail}", toEmail);
+                throw;
+            }
         }
     }
 }
