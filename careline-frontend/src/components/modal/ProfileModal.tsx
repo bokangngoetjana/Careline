@@ -20,10 +20,6 @@ export default function PatientProfileModal({ open, onClose }: PatientProfileMod
     }
   }, [open]);
 
-  const handleRefresh = () => {
-    getProfile();
-  };
-
   return (
     <Modal
       title={
@@ -35,9 +31,7 @@ export default function PatientProfileModal({ open, onClose }: PatientProfileMod
       open={open}
       onCancel={onClose}
       footer={[
-        <Button key="refresh" onClick={handleRefresh} loading={isPending}>
-          Refresh
-        </Button>,
+       
         <Button key="close" onClick={onClose}>
           Close
         </Button>,
@@ -56,7 +50,7 @@ export default function PatientProfileModal({ open, onClose }: PatientProfileMod
           type="error"
           showIcon
           action={
-            <Button size="small" onClick={handleRefresh}>
+            <Button size="small">
               Retry
             </Button>
           }

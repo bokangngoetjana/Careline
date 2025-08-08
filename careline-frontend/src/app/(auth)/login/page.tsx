@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
+import React, { useEffect} from "react";
 import type { FormProps } from "antd";
-import { Button, Form, Input, Typography } from "antd";
+import { Button, Form, Input, Typography, message } from "antd";
 import { useStyles } from "./Style/style";
 import { MailOutlined, LockOutlined } from "@ant-design/icons";
 import { useAuthActions, useAuthState } from "@/providers/auth-provider";
@@ -13,19 +13,22 @@ const { Title } = Typography;
 const LoginPage = () => {
   const { styles } = useStyles();
   const { loginUser } = useAuthActions();
-  const { isError } = useAuthState();
+  const { isError, isPending } = useAuthState();
 
   const onFinish: FormProps<IUser>['onFinish'] = async (values) => {
     const newUser: IUser = {
       userNameOrEmailAddress: values.userNameOrEmailAddress,
       password: values.password
     };
-    loginUser(newUser);
+      await loginUser(newUser);
   };
-
+useEffect(() => {
   if (isError) {
-    return <div>Login Error</div>;
+    console.log("Login error detected — showing toast");
+    message.error("Login failed. Please check your credentials and try again.");
   }
+}, [isError]);
+
 
   return (
     <div className={styles.container}>
@@ -48,6 +51,7 @@ const LoginPage = () => {
             className={styles.form}
             onFinish={onFinish}
             requiredMark={false}
+            disabled={isPending}
           >
             <Form.Item
               name="userNameOrEmailAddress"
@@ -78,8 +82,8 @@ const LoginPage = () => {
             </Form.Item>
 
             <Form.Item>
-              <Button htmlType="submit" type="primary" className={styles.submitBtn}>
-                Login
+              <Button htmlType="submit" type="primary" className={styles.submitBtn} loading={isPending}>
+                 {isPending ? "Logging in..." : "Login"} 
               </Button>
             </Form.Item>
           </Form>

@@ -7,7 +7,6 @@ import { useTicketActions, useTicketState } from '@/providers/ticket-provider';
 import { ITicket } from '@/providers/ticket-provider/context';
 import { useMedicalHistoryActions } from '@/providers/medhistory-provider';
 import { AddMedicalHistoryModal } from '@/components/modal/AddMedicalHistoryModal';
-import next from 'next';
 
 const NurseDashboard: React.FC = () => {
   const { styles } = useStyles();
