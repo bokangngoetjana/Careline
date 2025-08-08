@@ -3,6 +3,7 @@ import React, { useContext, useEffect } from "react";
 import { Modal, Card, Descriptions, Spin, Alert, Button } from "antd";
 import { UserOutlined, EditOutlined } from "@ant-design/icons";
 import { PatientProfileStateContext, PatientProfileActionContext } from "@/providers/patient-provider/context";
+import { useStyles } from "../../app/patient/Style/style";
 
 interface PatientProfileModalProps {
   open: boolean;
@@ -12,6 +13,8 @@ interface PatientProfileModalProps {
 export default function PatientProfileModal({ open, onClose }: PatientProfileModalProps) {
   const { profile, isPending, isError, error } = useContext(PatientProfileStateContext);
   const { getProfile } = useContext(PatientProfileActionContext);
+  
+  const { styles } = useStyles();
 
   // Load profile when modal opens
   useEffect(() => {
@@ -22,6 +25,7 @@ export default function PatientProfileModal({ open, onClose }: PatientProfileMod
 
   return (
     <Modal
+      className={styles.profileModal}
       title={
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <UserOutlined />
@@ -31,7 +35,6 @@ export default function PatientProfileModal({ open, onClose }: PatientProfileMod
       open={open}
       onCancel={onClose}
       footer={[
-       
         <Button key="close" onClick={onClose}>
           Close
         </Button>,
@@ -39,12 +42,13 @@ export default function PatientProfileModal({ open, onClose }: PatientProfileMod
       width={600}
     >
       {isPending ? (
-        <div style={{ textAlign: "center", padding: "40px 0" }}>
+        <div className={styles.profileLoadingContainer}>
           <Spin size="large" />
-          <p style={{ marginTop: 16 }}>Loading profile...</p>
+          <p>Loading profile...</p>
         </div>
       ) : isError ? (
         <Alert
+          className={styles.profileErrorAlert}
           message="Error Loading Profile"
           description={error || "Failed to load patient profile"}
           type="error"
@@ -56,7 +60,7 @@ export default function PatientProfileModal({ open, onClose }: PatientProfileMod
           }
         />
       ) : profile ? (
-        <Card>
+        <Card className={styles.profileCard}>
           <Descriptions column={1} bordered>
             <Descriptions.Item label="Full Name">
               {profile.name && profile.surname 
@@ -79,6 +83,7 @@ export default function PatientProfileModal({ open, onClose }: PatientProfileMod
         </Card>
       ) : (
         <Alert
+          className={styles.profileInfoAlert}
           message="No Profile Data"
           description="No profile information available"
           type="info"
